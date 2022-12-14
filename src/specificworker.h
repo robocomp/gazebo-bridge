@@ -29,6 +29,8 @@
 
 #include <genericworker.h>
 #include <innermodel/innermodel.h>
+#include <gz/msgs.hh>
+#include <gz/transport.hh>
 
 class SpecificWorker : public GenericWorker
 {
@@ -52,6 +54,9 @@ public:
 	void OmniRobot_stopBase();
 
 	void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
+
+    // Gazebo Transport client
+    static gz::transport::Node node;
 
 public slots:
 	void compute();

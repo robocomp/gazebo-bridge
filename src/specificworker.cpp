@@ -17,6 +17,14 @@
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "specificworker.h"
+#include <string>
+#include <gz/msgs.hh>
+#include <gz/transport.hh>
+
+using namespace std;
+using namespace gz;
+
+gz::transport::Node SpecificWorker::node;
 
 /**
 * \brief Default constructor
@@ -51,15 +59,55 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 //	catch(const std::exception &e) { qFatal("Error reading config params"); }
 
 
-
-
-
-
 	return true;
 }
 
+#pragma region Gazebo_CallbackFunctions
+
+void lidar_cb(const gz::msgs::LaserScan &_msg)
+{
+    gz::msgs::Twist dataMsg;
+
+    bool allMore = true;
+    for (int i = 0; i < _msg.ranges_size(); i++)
+    {
+        if (_msg.ranges(i) < 1.0)
+        {
+            allMore = false;
+            break;
+        }
+    }
+    if (allMore) // if all bigger than one
+    {
+        dataMsg.mutable_linear()->set_x(0.5);
+        dataMsg.mutable_angular()->set_z(0.0);
+    }
+    else
+    {
+        dataMsg.mutable_linear()->set_x(0.0);
+        dataMsg.mutable_angular()->set_z(0.5);
+    }
+
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Twist>("/cmd_vel");
+    pub.Publish(dataMsg);
+}
+
+void depth_camera_cb(const gz::msgs::Image &_msg)
+{
+    // Obtener la resolución de la imagen.
+    unsigned int width = _msg.width();
+    unsigned int height = _msg.height();
+
+    // CREO: Obtener los datos de los pixeles de la imagen.
+    string pixelData = _msg.data();
+}
+
+#pragma endregion Gazebo_CallbackFunctions
+
 void SpecificWorker::initialize(int period)
 {
+    #pragma region Robocomp
+
 	std::cout << "Initialize worker" << std::endl;
 	this->Period = period;
 	if(this->startup_check_flag)
@@ -71,7 +119,28 @@ void SpecificWorker::initialize(int period)
 		timer.start(Period);
 	}
 
+    #pragma endregion Robocomp
+
+    // Linking call back function to lidar sensor.
+    string topic = "/lidar";
+    // Subscribe to a topic by registering a callback
+    if (!node.Subscribe(topic, &lidar_cb))
+    {
+        cerr << "Error subscribing to topic [" << topic << "]" << std::endl;
+    }else{
+        cout << "SpecificWorker suscribed to [" << topic << "]" << std::endl;
+    }
+
+    topic = "/depth_camera";
+    // Subscribe to depth_camera topic by registering a callback
+    if (!node.Subscribe(topic, &depth_camera_cb))
+    {
+        cerr << "Error subscribing to topic [" << topic << "]" << std::endl;
+    }else{
+        cout << "SpecificWorker suscribed to [" << topic << "]" << std::endl;
+    }
 }
+
 
 void SpecificWorker::compute()
 {
@@ -87,8 +156,6 @@ void SpecificWorker::compute()
 	//{
 	//  std::cout << "Error reading from Camera" << e << std::endl;
 	//}
-	
-	
 }
 
 int SpecificWorker::startup_check()
