@@ -1,0 +1,14 @@
+import "CameraRGBDSimple.idsl";
+import "JoystickAdapter.idsl";
+import "OmniRobot.idsl";
+
+Component Gazebo2Robocomp
+{
+    Communications
+    {
+        implements CameraRGBDSimple, OmniRobot;
+        subscribesTo JoystickAdapter;
+    };
+    language Cpp11;
+};
+
