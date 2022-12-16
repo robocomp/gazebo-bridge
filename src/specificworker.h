@@ -58,6 +58,16 @@ public:
     // Gazebo Transport client
     static gz::transport::Node node;
 
+    // Getters & Setters
+    void SetRotation(float newRotation);
+    float GetRotation();
+
+    void SetAdvance(float newAdvance);
+    float GetAdvance();
+
+    void SetSide(float newSide);
+    float GetSide();
+
 public slots:
 	void compute();
 	int startup_check();
@@ -65,6 +75,11 @@ public slots:
 private:
 	std::shared_ptr < InnerModel > innerModel;
 	bool startup_check_flag;
+
+    // Model motion main attributes
+    float rotation;
+    float advance;
+    float side;
 
 };
 

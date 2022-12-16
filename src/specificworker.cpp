@@ -23,6 +23,7 @@
 
 using namespace std;
 using namespace gz;
+using namespace RoboCompJoystickAdapter;
 
 gz::transport::Node SpecificWorker::node;
 
@@ -156,6 +157,11 @@ void SpecificWorker::compute()
 	//{
 	//  std::cout << "Error reading from Camera" << e << std::endl;
 	//}
+
+    cout << "Rotation: " << rotation << endl;
+    cout << "Advance: " << advance << endl;
+    cout << "Side: " << side << endl;
+
 }
 
 int SpecificWorker::startup_check()
@@ -241,9 +247,50 @@ void SpecificWorker::OmniRobot_stopBase()
 //SUBSCRIPTION to sendData method from JoystickAdapter interface
 void SpecificWorker::JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data)
 {
-//subscribesToCODE
+    for (ButtonParams button : data.buttons) {
+        // TODO: Añadir interacion con botones
+    }
+
+    for (AxisParams axis : data.axes){
+        if(axis.name == "rotate")
+            SetRotation(axis.value);
+        else if (axis.name == "advance")
+            SetAdvance(axis.value);
+        else if (axis.name == "side")
+            SetSide(axis.value);
+        else
+            cout << "[ JoystickAdapter: ] Warning: Velocidad no ajustada." << endl;
+    }
 
 }
+
+# pragma region Getters&Setters
+
+void SpecificWorker::SetRotation(float newRotation) {
+    rotation = newRotation;
+}
+
+float SpecificWorker::GetRotation() {
+    return rotation;
+}
+
+void SpecificWorker::SetAdvance(float newAdvance) {
+    advance = newAdvance;
+}
+
+float SpecificWorker::GetAdvance() {
+    return advance;
+}
+
+void SpecificWorker::SetSide(float newSide) {
+    side = newSide;
+}
+
+float SpecificWorker::GetSide() {
+    return side;
+}
+
+# pragma endregion Getters&Setters
 
 
 
