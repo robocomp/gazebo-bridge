@@ -122,6 +122,8 @@ void SpecificWorker::initialize(int period)
 
     #pragma endregion Robocomp
 
+
+    /*
     // Linking call back function to lidar sensor.
     string topic = "/lidar";
     // Subscribe to a topic by registering a callback
@@ -140,6 +142,8 @@ void SpecificWorker::initialize(int period)
     }else{
         cout << "SpecificWorker suscribed to [" << topic << "]" << std::endl;
     }
+
+     */
 }
 
 
@@ -158,9 +162,20 @@ void SpecificWorker::compute()
 	//  std::cout << "Error reading from Camera" << e << std::endl;
 	//}
 
+    // DEBUG: main attributes prints
     cout << "Rotation: " << rotation << endl;
     cout << "Advance: " << advance << endl;
     cout << "Side: " << side << endl;
+
+    // Joystick control
+    gz::msgs::Twist dataMsg;
+
+    dataMsg.mutable_linear()->set_x(advance);
+    dataMsg.mutable_angular()->set_z(rotation);
+
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Twist>("/cmd_vel");
+    pub.Publish(dataMsg);
+
 
 }
 
