@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+message TData {
+  string id = 1;
+  repeated AxisParams axes = 2;
+  repeated ButtonParams buttons = 3;
+}
+
+message AxisParams {
+  string name = 1;
+  float value = 2;
+}
+
+message ButtonParams {
+  string name = 1;
+  int32 step = 2;
+}

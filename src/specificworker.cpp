@@ -18,12 +18,15 @@
  */
 #include "specificworker.h"
 #include <string>
+// Gazebo
 #include <gz/msgs.hh>
 #include <gz/transport.hh>
+// Protobuf
+#include "protobuf/bin/JoystickAdapter.pb.h"
+
 
 using namespace std;
 using namespace gz;
-using namespace RoboCompJoystickAdapter;
 
 gz::transport::Node SpecificWorker::node;
 
@@ -122,7 +125,7 @@ void SpecificWorker::initialize(int period)
 
     #pragma endregion Robocomp
 
-
+    #pragma region SubscribingGazeboNodeExample
     /*
     // Linking call back function to lidar sensor.
     string topic = "/lidar";
@@ -144,6 +147,8 @@ void SpecificWorker::initialize(int period)
     }
 
      */
+    #pragma endregion SubscribingGazeboNodeExample
+
 }
 
 
@@ -175,8 +180,6 @@ void SpecificWorker::compute()
 
     gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Twist>("/cmd_vel");
     pub.Publish(dataMsg);
-
-
 }
 
 int SpecificWorker::startup_check()
@@ -259,24 +262,34 @@ void SpecificWorker::OmniRobot_stopBase()
 
 }
 
-//SUBSCRIPTION to sendData method from JoystickAdapter interface
+/**
+ * @brief Subscription callback for the sendData method of the JoystickAdapter interface.
+ *
+ * @param[in] data Data structure containing information about the joystick buttons and axes.
+ */
 void SpecificWorker::JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data)
 {
-    for (ButtonParams button : data.buttons) {
-        // TODO: Añadir interacion con botones
+    // Iterate through the list of buttons in the data structure
+    for (RoboCompJoystickAdapter::ButtonParams button : data.buttons) {
+        // Currently does nothing with the buttons
     }
 
-    for (AxisParams axis : data.axes){
-        if(axis.name == "rotate")
+    // Iterate through the list of axes in the data structure
+    for (RoboCompJoystickAdapter::AxisParams axis : data.axes){
+        // Process the axis according to its name
+        if(axis.name == "rotate") {
             SetRotation(axis.value);
-        else if (axis.name == "advance")
+        }
+        else if (axis.name == "advance") {
             SetAdvance(axis.value);
-        else if (axis.name == "side")
+        }
+        else if (axis.name == "side") {
             SetSide(axis.value);
-        else
+        }
+        else {
             cout << "[ JoystickAdapter: ] Warning: Velocidad no ajustada." << endl;
+        }
     }
-
 }
 
 # pragma region Getters&Setters
