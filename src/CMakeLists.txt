@@ -27,7 +27,7 @@ SET ( SOURCES
   camerargbdsimpleI.cpp
   omnirobotI.cpp
   joystickadapterI.cpp
-)
+        topics.h)
 
 
 

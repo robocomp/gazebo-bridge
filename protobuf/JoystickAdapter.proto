@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package Proto_JoystickAdapter;
+
 message TData {
   string id = 1;
   repeated AxisParams axes = 2;

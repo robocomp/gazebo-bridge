@@ -18,17 +18,18 @@
  */
 #include "specificworker.h"
 #include <string>
+#include "topics.h"
 // Gazebo
 #include <gz/msgs.hh>
 #include <gz/transport.hh>
-// Protobuf
-#include "protobuf/bin/JoystickAdapter.pb.h"
+
 
 
 using namespace std;
 using namespace gz;
 
 gz::transport::Node SpecificWorker::node;
+RoboCompCameraRGBDSimple::TDepth SpecificWorker::depthImage;
 
 /**
 * \brief Default constructor
@@ -61,7 +62,6 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 //		innerModel = std::make_shared(innermodel_path);
 //	}
 //	catch(const std::exception &e) { qFatal("Error reading config params"); }
-
 
 	return true;
 }
@@ -98,12 +98,17 @@ void lidar_cb(const gz::msgs::LaserScan &_msg)
 
 void depth_camera_cb(const gz::msgs::Image &_msg)
 {
-    // Obtener la resolución de la imagen.
-    unsigned int width = _msg.width();
-    unsigned int height = _msg.height();
+    RoboCompCameraRGBDSimple::TDepth newdepthImage;
 
-    // CREO: Obtener los datos de los pixeles de la imagen.
-    string pixelData = _msg.data();
+    // Obtener la resolución de la imagen.
+    newdepthImage.width = _msg.width();
+    newdepthImage.height = _msg.height();
+
+    // Obtener la imagen y asignarla al tipo TImage de Robocomp
+    newdepthImage.depth.assign(_msg.data().begin(), _msg.data().end());
+
+    // Asignamos el resultado final al atributo de clase
+    SpecificWorker::depthImage = newdepthImage;
 }
 
 #pragma endregion Gazebo_CallbackFunctions
@@ -145,9 +150,16 @@ void SpecificWorker::initialize(int period)
     }else{
         cout << "SpecificWorker suscribed to [" << topic << "]" << std::endl;
     }
-
      */
     #pragma endregion SubscribingGazeboNodeExample
+
+    // Subscribe to depth_camera topic by registering a callback
+    if (!node.Subscribe(ROBOCOMP_DEPTHCAMERA, &depth_camera_cb))
+    {
+        cerr << "Error subscribing to topic [" << ROBOCOMP_DEPTHCAMERA << "]" << std::endl;
+    }else{
+        cout << "SpecificWorker suscribed to [" << ROBOCOMP_DEPTHCAMERA << "]" << std::endl;
+    }
 
 }
 
@@ -167,19 +179,7 @@ void SpecificWorker::compute()
 	//  std::cout << "Error reading from Camera" << e << std::endl;
 	//}
 
-    // DEBUG: main attributes prints
-    cout << "Rotation: " << rotation << endl;
-    cout << "Advance: " << advance << endl;
-    cout << "Side: " << side << endl;
-
-    // Joystick control
-    gz::msgs::Twist dataMsg;
-
-    dataMsg.mutable_linear()->set_x(advance);
-    dataMsg.mutable_angular()->set_z(rotation);
-
-    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Twist>("/cmd_vel");
-    pub.Publish(dataMsg);
+    JoystickAdapter2Gazebo();
 }
 
 int SpecificWorker::startup_check()
@@ -189,6 +189,20 @@ int SpecificWorker::startup_check()
 	return 0;
 }
 
+void SpecificWorker::JoystickAdapter2Gazebo(){
+
+    // Joystick control
+    gz::msgs::Twist dataMsg;
+
+    dataMsg.mutable_linear()->set_x(advance);
+    dataMsg.mutable_linear()->set_y(side);
+    dataMsg.mutable_angular()->set_z(rotation);
+
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Twist>(ROBOCOMP_JOYSTICKADAPTER);
+    pub.Publish(dataMsg);
+}
+
+#pragma region SimpleCameraRGBD
 
 RoboCompCameraRGBDSimple::TRGBD SpecificWorker::CameraRGBDSimple_getAll(std::string camera)
 {
@@ -198,8 +212,7 @@ RoboCompCameraRGBDSimple::TRGBD SpecificWorker::CameraRGBDSimple_getAll(std::str
 
 RoboCompCameraRGBDSimple::TDepth SpecificWorker::CameraRGBDSimple_getDepth(std::string camera)
 {
-//implementCODE
-
+    return SpecificWorker::depthImage;
 }
 
 RoboCompCameraRGBDSimple::TImage SpecificWorker::CameraRGBDSimple_getImage(std::string camera)
@@ -213,6 +226,10 @@ RoboCompCameraRGBDSimple::TPoints SpecificWorker::CameraRGBDSimple_getPoints(std
 //implementCODE
 
 }
+
+#pragma endregion SimpleCameraRGBD
+
+#pragma region OmniRobot
 
 void SpecificWorker::OmniRobot_correctOdometer(int x, int z, float alpha)
 {
@@ -261,6 +278,8 @@ void SpecificWorker::OmniRobot_stopBase()
 //implementCODE
 
 }
+
+#pragma endregion OmniRobot
 
 /**
  * @brief Subscription callback for the sendData method of the JoystickAdapter interface.

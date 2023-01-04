@@ -22,7 +22,7 @@
 	@author authorname
 */
 
-
+#pragma once
 
 #ifndef SPECIFICWORKER_H
 #define SPECIFICWORKER_H
@@ -55,8 +55,18 @@ public:
 
 	void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
 
+    void JoystickAdapter2Gazebo();
+
     // Gazebo Transport client
     static gz::transport::Node node;
+
+    // JoystickAdapter main attributes
+    float rotation;
+    float advance;
+    float side;
+
+    // Camera RGBD simple
+    static RoboCompCameraRGBDSimple::TDepth depthImage;
 
     // Getters & Setters
     void SetRotation(float newRotation);
@@ -75,11 +85,6 @@ public slots:
 private:
 	std::shared_ptr < InnerModel > innerModel;
 	bool startup_check_flag;
-
-    // Model motion main attributes
-    float rotation;
-    float advance;
-    float side;
 
 };
 
