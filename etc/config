@@ -1,7 +1,7 @@
 CommonBehavior.Endpoints=tcp -p 10000
 
 # Endpoints for implements interfaces
-CameraRGBDSimple.Endpoints=tcp -p 0
+CameraRGBDSimple.Endpoints=tcp -p 10096
 OmniRobot.Endpoints=tcp -p 0
 
 
