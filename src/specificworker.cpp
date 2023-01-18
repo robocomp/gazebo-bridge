@@ -23,8 +23,6 @@
 #include <gz/msgs.hh>
 #include <gz/transport.hh>
 
-
-
 using namespace std;
 using namespace gz;
 
@@ -37,10 +35,7 @@ RoboCompCameraRGBDSimple::TDepth SpecificWorker::depthImage;
 SpecificWorker::SpecificWorker(TuplePrx tprx, bool startup_check) : GenericWorker(tprx)
 {
 	this->startup_check_flag = startup_check;
-	// Uncomment if there's too many debug messages
-	// but it removes the possibility to see the messages
-	// shown in the console with qDebug()
-//	QLoggingCategory::setFilterRules("*.debug=false\n");
+ 	QLoggingCategory::setFilterRules("*.debug=false\n");
 }
 
 /**
@@ -53,22 +48,49 @@ SpecificWorker::~SpecificWorker()
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 {
-//	THE FOLLOWING IS JUST AN EXAMPLE
-//	To use innerModelPath parameter you should uncomment specificmonitor.cpp readConfig method content
-//	try
-//	{
-//		RoboCompCommonBehavior::Parameter par = params.at("InnerModelPath");
-//		std::string innermodel_path = par.value;
-//		innerModel = std::make_shared(innermodel_path);
-//	}
-//	catch(const std::exception &e) { qFatal("Error reading config params"); }
-
 	return true;
 }
 
+#pragma endregion Gazebo_CallbackFunctions
+
+void SpecificWorker::initialize(int period)
+{
+    #pragma region Robocomp
+
+	std::cout << "Initialize worker" << std::endl;
+	this->Period = period;
+	if(this->startup_check_flag)
+	{
+		this->startup_check();
+	}
+	else
+	{
+		timer.start(Period);
+	}
+
+    #pragma endregion Robocomp
+
+    // Subscribe to depth_camera topic by registering a callback
+    if (!node.Subscribe(ROBOCOMP_DEPTHCAMERA, &SpecificWorker::depth_camera_cb, this))
+        cerr << "Error subscribing to topic [" << ROBOCOMP_DEPTHCAMERA << "]" << std::endl;
+    else
+        cout << "SpecificWorker suscribed to [" << ROBOCOMP_DEPTHCAMERA << "]" << std::endl;
+}
+
+void SpecificWorker::compute()
+{
+    // Doing nothing with the compute
+}
+
+///////////////////////////////////////////////////////////////////////////////////
 #pragma region Gazebo_CallbackFunctions
 
-void lidar_cb(const gz::msgs::LaserScan &_msg)
+/**
+ * @brief Subscription callback for the LIDAR sensor in Gazebo.
+ *
+ * @param[in] _msg Data structure containing information about the LIDAR.
+ */
+void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
 {
     gz::msgs::Twist dataMsg;
 
@@ -96,9 +118,17 @@ void lidar_cb(const gz::msgs::LaserScan &_msg)
     pub.Publish(dataMsg);
 }
 
-void depth_camera_cb(const gz::msgs::Image &_msg)
+/**
+ * @brief Subscription callback for the depth camera sensor in Gazebo.
+ *
+ * @param[in] _msg Data structure containing information about the depth image.
+ */
+void SpecificWorker::depth_camera_cb(const gz::msgs::Image &_msg)
 {
     RoboCompCameraRGBDSimple::TDepth newdepthImage;
+
+    // Se establece el periodo de refresco de la imagen en milisegundos.
+    newdepthImage.period = 100;
 
     // Obtener la resolución de la imagen.
     newdepthImage.width = _msg.width();
@@ -106,102 +136,14 @@ void depth_camera_cb(const gz::msgs::Image &_msg)
 
     // Obtener la imagen y asignarla al tipo TImage de Robocomp
     newdepthImage.depth.assign(_msg.data().begin(), _msg.data().end());
+    newdepthImage.compressed = false;
 
     // Asignamos el resultado final al atributo de clase
     SpecificWorker::depthImage = newdepthImage;
+    fps.print("FPS:");
 }
 
-#pragma endregion Gazebo_CallbackFunctions
-
-void SpecificWorker::initialize(int period)
-{
-    #pragma region Robocomp
-
-	std::cout << "Initialize worker" << std::endl;
-	this->Period = period;
-	if(this->startup_check_flag)
-	{
-		this->startup_check();
-	}
-	else
-	{
-		timer.start(Period);
-	}
-
-    #pragma endregion Robocomp
-
-    #pragma region SubscribingGazeboNodeExample
-    /*
-    // Linking call back function to lidar sensor.
-    string topic = "/lidar";
-    // Subscribe to a topic by registering a callback
-    if (!node.Subscribe(topic, &lidar_cb))
-    {
-        cerr << "Error subscribing to topic [" << topic << "]" << std::endl;
-    }else{
-        cout << "SpecificWorker suscribed to [" << topic << "]" << std::endl;
-    }
-
-    topic = "/depth_camera";
-    // Subscribe to depth_camera topic by registering a callback
-    if (!node.Subscribe(topic, &depth_camera_cb))
-    {
-        cerr << "Error subscribing to topic [" << topic << "]" << std::endl;
-    }else{
-        cout << "SpecificWorker suscribed to [" << topic << "]" << std::endl;
-    }
-     */
-    #pragma endregion SubscribingGazeboNodeExample
-
-    // Subscribe to depth_camera topic by registering a callback
-    if (!node.Subscribe(ROBOCOMP_DEPTHCAMERA, &depth_camera_cb))
-    {
-        cerr << "Error subscribing to topic [" << ROBOCOMP_DEPTHCAMERA << "]" << std::endl;
-    }else{
-        cout << "SpecificWorker suscribed to [" << ROBOCOMP_DEPTHCAMERA << "]" << std::endl;
-    }
-
-}
-
-
-void SpecificWorker::compute()
-{
-	//computeCODE
-	//QMutexLocker locker(mutex);
-	//try
-	//{
-	//  camera_proxy->getYImage(0,img, cState, bState);
-	//  memcpy(image_gray.data, &img[0], m_width*m_height*sizeof(uchar));
-	//  searchTags(image_gray);
-	//}
-	//catch(const Ice::Exception &e)
-	//{
-	//  std::cout << "Error reading from Camera" << e << std::endl;
-	//}
-
-    JoystickAdapter2Gazebo();
-}
-
-int SpecificWorker::startup_check()
-{
-	std::cout << "Startup check" << std::endl;
-	QTimer::singleShot(200, qApp, SLOT(quit()));
-	return 0;
-}
-
-void SpecificWorker::JoystickAdapter2Gazebo(){
-
-    // Joystick control
-    gz::msgs::Twist dataMsg;
-
-    dataMsg.mutable_linear()->set_x(advance);
-    dataMsg.mutable_linear()->set_y(side);
-    dataMsg.mutable_angular()->set_z(rotation);
-
-    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Twist>(ROBOCOMP_JOYSTICKADAPTER);
-    pub.Publish(dataMsg);
-}
-
+//////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma region SimpleCameraRGBD
 
 RoboCompCameraRGBDSimple::TRGBD SpecificWorker::CameraRGBDSimple_getAll(std::string camera)
@@ -218,7 +160,7 @@ RoboCompCameraRGBDSimple::TDepth SpecificWorker::CameraRGBDSimple_getDepth(std::
 RoboCompCameraRGBDSimple::TImage SpecificWorker::CameraRGBDSimple_getImage(std::string camera)
 {
 //implementCODE
-
+   
 }
 
 RoboCompCameraRGBDSimple::TPoints SpecificWorker::CameraRGBDSimple_getPoints(std::string camera)
@@ -288,6 +230,11 @@ void SpecificWorker::OmniRobot_stopBase()
  */
 void SpecificWorker::JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data)
 {
+    // Declaration of the structure to be filled
+    gz::msgs::Twist dataMsg;
+    // Declaration of Gazebo publisher
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Twist>(ROBOCOMP_JOYSTICKADAPTER);
+
     // Iterate through the list of buttons in the data structure
     for (RoboCompJoystickAdapter::ButtonParams button : data.buttons) {
         // Currently does nothing with the buttons
@@ -297,49 +244,37 @@ void SpecificWorker::JoystickAdapter_sendData(RoboCompJoystickAdapter::TData dat
     for (RoboCompJoystickAdapter::AxisParams axis : data.axes){
         // Process the axis according to its name
         if(axis.name == "rotate") {
-            SetRotation(axis.value);
+            rotation = axis.value;
         }
         else if (axis.name == "advance") {
-            SetAdvance(axis.value);
+            advance = axis.value;
         }
         else if (axis.name == "side") {
-            SetSide(axis.value);
+            side = axis.value;
         }
         else {
             cout << "[ JoystickAdapter: ] Warning: Velocidad no ajustada." << endl;
         }
     }
+
+    // Set of joystick inputs into the structure
+    dataMsg.mutable_linear()->set_x(advance);
+    dataMsg.mutable_linear()->set_y(side);
+    dataMsg.mutable_angular()->set_z(rotation);
+
+    // Publish to Gazebo with the actual Joystick output.
+    pub.Publish(dataMsg);
 }
 
-# pragma region Getters&Setters
 
-void SpecificWorker::SetRotation(float newRotation) {
-    rotation = newRotation;
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+int SpecificWorker::startup_check()
+{
+    std::cout << "Startup check" << std::endl;
+    QTimer::singleShot(200, qApp, SLOT(quit()));
+    return 0;
 }
-
-float SpecificWorker::GetRotation() {
-    return rotation;
-}
-
-void SpecificWorker::SetAdvance(float newAdvance) {
-    advance = newAdvance;
-}
-
-float SpecificWorker::GetAdvance() {
-    return advance;
-}
-
-void SpecificWorker::SetSide(float newSide) {
-    side = newSide;
-}
-
-float SpecificWorker::GetSide() {
-    return side;
-}
-
-# pragma endregion Getters&Setters
-
-
 
 /**************************************/
 // From the RoboCompCameraRGBDSimple you can use this types:

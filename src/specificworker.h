@@ -20,6 +20,8 @@
 /**
 	\brief
 	@author authorname
+
+
 */
 
 #pragma once
@@ -31,61 +33,66 @@
 #include <innermodel/innermodel.h>
 #include <gz/msgs.hh>
 #include <gz/transport.hh>
+#include <fps/fps.h>
 
 class SpecificWorker : public GenericWorker
 {
-Q_OBJECT
-public:
-	SpecificWorker(TuplePrx tprx, bool startup_check);
-	~SpecificWorker();
-	bool setParams(RoboCompCommonBehavior::ParameterList params);
+    Q_OBJECT
+    public:
+        SpecificWorker(TuplePrx tprx, bool startup_check);
+        ~SpecificWorker();
+        bool setParams(RoboCompCommonBehavior::ParameterList params);
 
-	RoboCompCameraRGBDSimple::TRGBD CameraRGBDSimple_getAll(std::string camera);
-	RoboCompCameraRGBDSimple::TDepth CameraRGBDSimple_getDepth(std::string camera);
-	RoboCompCameraRGBDSimple::TImage CameraRGBDSimple_getImage(std::string camera);
-	RoboCompCameraRGBDSimple::TPoints CameraRGBDSimple_getPoints(std::string camera);
-	void OmniRobot_correctOdometer(int x, int z, float alpha);
-	void OmniRobot_getBasePose(int &x, int &z, float &alpha);
-	void OmniRobot_getBaseState(RoboCompGenericBase::TBaseState &state);
-	void OmniRobot_resetOdometer();
-	void OmniRobot_setOdometer(RoboCompGenericBase::TBaseState state);
-	void OmniRobot_setOdometerPose(int x, int z, float alpha);
-	void OmniRobot_setSpeedBase(float advx, float advz, float rot);
-	void OmniRobot_stopBase();
+        RoboCompCameraRGBDSimple::TRGBD CameraRGBDSimple_getAll(std::string camera);
+        RoboCompCameraRGBDSimple::TDepth CameraRGBDSimple_getDepth(std::string camera);
+        RoboCompCameraRGBDSimple::TImage CameraRGBDSimple_getImage(std::string camera);
+        RoboCompCameraRGBDSimple::TPoints CameraRGBDSimple_getPoints(std::string camera);
+        void OmniRobot_correctOdometer(int x, int z, float alpha);
+        void OmniRobot_getBasePose(int &x, int &z, float &alpha);
+        void OmniRobot_getBaseState(RoboCompGenericBase::TBaseState &state);
+        void OmniRobot_resetOdometer();
+        void OmniRobot_setOdometer(RoboCompGenericBase::TBaseState state);
+        void OmniRobot_setOdometerPose(int x, int z, float alpha);
+        void OmniRobot_setSpeedBase(float advx, float advz, float rot);
+        void OmniRobot_stopBase();
 
-	void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
+        void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
 
-    void JoystickAdapter2Gazebo();
+        void JoystickAdapter2Gazebo();
 
-    // Gazebo Transport client
-    static gz::transport::Node node;
+        // Gazebo Transport client
+        static gz::transport::Node node;
 
-    // JoystickAdapter main attributes
-    float rotation;
-    float advance;
-    float side;
+        // JoystickAdapter main attributes
+        float rotation;
+        float advance;
+        float side;
 
-    // Camera RGBD simple
-    static RoboCompCameraRGBDSimple::TDepth depthImage;
+        // Camera RGBD simple
+        static RoboCompCameraRGBDSimple::TDepth depthImage;
 
-    // Getters & Setters
-    void SetRotation(float newRotation);
-    float GetRotation();
+        // Getters & Setters
+        void SetRotation(float newRotation);
+        float GetRotation();
 
-    void SetAdvance(float newAdvance);
-    float GetAdvance();
+        void SetAdvance(float newAdvance);
+        float GetAdvance();
 
-    void SetSide(float newSide);
-    float GetSide();
+        void SetSide(float newSide);
+        float GetSide();
 
-public slots:
-	void compute();
-	int startup_check();
-	void initialize(int period);
-private:
-	std::shared_ptr < InnerModel > innerModel;
-	bool startup_check_flag;
+    public slots:
+        void compute();
+        int startup_check();
+        void initialize(int period);
 
+    private:
+        std::shared_ptr < InnerModel > innerModel;
+        bool startup_check_flag;
+        FPSCounter fps;
+
+        void depth_camera_cb(const gz::msgs::Image &_msg);
+        void lidar_cb(const gz::msgs::LaserScan &_msg);
 };
 
 #endif
