@@ -25,9 +25,10 @@ SET ( SOURCES
   commonbehaviorI.cpp
   genericworker.cpp
   camerargbdsimpleI.cpp
+  laserI.cpp
   omnirobotI.cpp
   joystickadapterI.cpp
-        topics.h)
+)
 
 
 
@@ -37,8 +38,8 @@ FIND_PACKAGE( Ice REQUIRED COMPONENTS Ice++11 IceStorm++11)
 
 #ROBOCOMP
 ROBOCOMP_INITIALIZE( $ENV{ROBOCOMP}/ )
-ROBOCOMP_IDSL_TO_ICE( CommonBehavior CameraRGBDSimple GenericBase JoystickAdapter OmniRobot)
-ROBOCOMP_ICE_TO_SRC( CommonBehavior CameraRGBDSimple GenericBase JoystickAdapter OmniRobot)
+ROBOCOMP_IDSL_TO_ICE( CommonBehavior CameraRGBDSimple GenericBase JoystickAdapter Laser OmniRobot)
+ROBOCOMP_ICE_TO_SRC( CommonBehavior CameraRGBDSimple GenericBase JoystickAdapter Laser OmniRobot)
 SET (EXECUTABLE_OUTPUT_PATH ${RC_COMPONENT_DEVEL_PATH}/bin)
 
 
@@ -53,4 +54,3 @@ SET_TARGET_PROPERTIES(Gazebo2Robocomp
         CXX_STANDARD 20
         )
 INSTALL(FILES ${EXECUTABLE_OUTPUT_PATH}/Gazebo2Robocomp DESTINATION ${RC_COMPONENT_INSTALL_PATH}/bin/ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
-

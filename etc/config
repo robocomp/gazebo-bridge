@@ -1,12 +1,13 @@
-CommonBehavior.Endpoints=tcp -p 10000
+CommonBehavior.Endpoints=tcp -p 10217
 
 # Endpoints for implements interfaces
 CameraRGBDSimple.Endpoints=tcp -p 10096
-OmniRobot.Endpoints=tcp -p 0
+Laser.Endpoints=tcp -p 10003
+OmniRobot.Endpoints=tcp -p 10004
 
 
 # Endpoints for subscriptions interfaces
-JoystickAdapterTopic.Endpoints=tcp -p 0
+JoystickAdapterTopic.Endpoints=tcp -p 11025
 
 
 # This property is used by the clients to connect to IceStorm.

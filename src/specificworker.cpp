@@ -27,7 +27,6 @@ using namespace std;
 using namespace gz;
 
 gz::transport::Node SpecificWorker::node;
-RoboCompCameraRGBDSimple::TDepth SpecificWorker::depthImage;
 
 /**
 * \brief Default constructor
@@ -223,6 +222,28 @@ void SpecificWorker::OmniRobot_stopBase()
 
 #pragma endregion OmniRobot
 
+#pragma region LIDAR
+
+RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState)
+{
+//implementCODE
+
+}
+
+RoboCompLaser::LaserConfData SpecificWorker::Laser_getLaserConfData()
+{
+//implementCODE
+
+}
+
+RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserData()
+{
+//implementCODE
+
+}
+
+#pragma endregion LIDAR
+
 /**
  * @brief Subscription callback for the sendData method of the JoystickAdapter interface.
  *
@@ -244,28 +265,22 @@ void SpecificWorker::JoystickAdapter_sendData(RoboCompJoystickAdapter::TData dat
     for (RoboCompJoystickAdapter::AxisParams axis : data.axes){
         // Process the axis according to its name
         if(axis.name == "rotate") {
-            rotation = axis.value;
+            dataMsg.mutable_angular()->set_z(axis.value);
         }
         else if (axis.name == "advance") {
-            advance = axis.value;
+            dataMsg.mutable_linear()->set_x(axis.value);
         }
         else if (axis.name == "side") {
-            side = axis.value;
+            dataMsg.mutable_linear()->set_y(axis.value);
         }
         else {
             cout << "[ JoystickAdapter: ] Warning: Velocidad no ajustada." << endl;
         }
     }
 
-    // Set of joystick inputs into the structure
-    dataMsg.mutable_linear()->set_x(advance);
-    dataMsg.mutable_linear()->set_y(side);
-    dataMsg.mutable_angular()->set_z(rotation);
-
     // Publish to Gazebo with the actual Joystick output.
     pub.Publish(dataMsg);
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -43,10 +43,16 @@ class SpecificWorker : public GenericWorker
         ~SpecificWorker();
         bool setParams(RoboCompCommonBehavior::ParameterList params);
 
+        // RGBD Camera
         RoboCompCameraRGBDSimple::TRGBD CameraRGBDSimple_getAll(std::string camera);
         RoboCompCameraRGBDSimple::TDepth CameraRGBDSimple_getDepth(std::string camera);
         RoboCompCameraRGBDSimple::TImage CameraRGBDSimple_getImage(std::string camera);
         RoboCompCameraRGBDSimple::TPoints CameraRGBDSimple_getPoints(std::string camera);
+        // LIDAR
+        RoboCompLaser::TLaserData Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState);
+        RoboCompLaser::LaserConfData Laser_getLaserConfData();
+        RoboCompLaser::TLaserData Laser_getLaserData();
+        // OMNIROBOT
         void OmniRobot_correctOdometer(int x, int z, float alpha);
         void OmniRobot_getBasePose(int &x, int &z, float &alpha);
         void OmniRobot_getBaseState(RoboCompGenericBase::TBaseState &state);
@@ -56,30 +62,11 @@ class SpecificWorker : public GenericWorker
         void OmniRobot_setSpeedBase(float advx, float advz, float rot);
         void OmniRobot_stopBase();
 
+        // JOYSTICK
         void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
-
-        void JoystickAdapter2Gazebo();
 
         // Gazebo Transport client
         static gz::transport::Node node;
-
-        // JoystickAdapter main attributes
-        float rotation;
-        float advance;
-        float side;
-
-        // Camera RGBD simple
-        static RoboCompCameraRGBDSimple::TDepth depthImage;
-
-        // Getters & Setters
-        void SetRotation(float newRotation);
-        float GetRotation();
-
-        void SetAdvance(float newAdvance);
-        float GetAdvance();
-
-        void SetSide(float newSide);
-        float GetSide();
 
     public slots:
         void compute();
@@ -93,6 +80,10 @@ class SpecificWorker : public GenericWorker
 
         void depth_camera_cb(const gz::msgs::Image &_msg);
         void lidar_cb(const gz::msgs::LaserScan &_msg);
+
+        // Camera RGBD simple
+        RoboCompCameraRGBDSimple::TDepth depthImage;
+
 };
 
 #endif

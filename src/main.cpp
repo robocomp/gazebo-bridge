@@ -1,5 +1,5 @@
 /*
- *    Copyright (C) 2022 by YOUR NAME HERE
+ *    Copyright (C) 2023 by YOUR NAME HERE
  *
  *    This file is part of RoboComp
  *
@@ -82,6 +82,7 @@
 #include "commonbehaviorI.h"
 
 #include <camerargbdsimpleI.h>
+#include <laserI.h>
 #include <omnirobotI.h>
 #include <joystickadapterI.h>
 
@@ -208,6 +209,24 @@ int ::Gazebo2Robocomp::run(int argc, char* argv[])
 		}
 		catch (const IceStorm::TopicExists&){
 			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for CameraRGBDSimple\n";
+		}
+
+
+		try
+		{
+			// Server adapter creation and publication
+			if (not GenericMonitor::configGetString(communicator(), prefix, "Laser.Endpoints", tmp, ""))
+			{
+				cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy Laser";
+			}
+			Ice::ObjectAdapterPtr adapterLaser = communicator()->createObjectAdapterWithEndpoints("Laser", tmp);
+			auto laser = std::make_shared<LaserI>(worker);
+			adapterLaser->add(laser, Ice::stringToIdentity("laser"));
+			adapterLaser->activate();
+			cout << "[" << PROGRAM_NAME << "]: Laser adapter created in port " << tmp << endl;
+		}
+		catch (const IceStorm::TopicExists&){
+			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for Laser\n";
 		}
 
 

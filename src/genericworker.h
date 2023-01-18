@@ -1,5 +1,5 @@
 /*
- *    Copyright (C) 2022 by YOUR NAME HERE
+ *    Copyright (C) 2023 by YOUR NAME HERE
  *
  *    This file is part of RoboComp
  *
@@ -27,6 +27,7 @@
 #include <CameraRGBDSimple.h>
 #include <GenericBase.h>
 #include <JoystickAdapter.h>
+#include <Laser.h>
 #include <OmniRobot.h>
 
 
@@ -55,6 +56,9 @@ public:
 	virtual RoboCompCameraRGBDSimple::TDepth CameraRGBDSimple_getDepth(std::string camera) = 0;
 	virtual RoboCompCameraRGBDSimple::TImage CameraRGBDSimple_getImage(std::string camera) = 0;
 	virtual RoboCompCameraRGBDSimple::TPoints CameraRGBDSimple_getPoints(std::string camera) = 0;
+	virtual RoboCompLaser::TLaserData Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState) = 0;
+	virtual RoboCompLaser::LaserConfData Laser_getLaserConfData() = 0;
+	virtual RoboCompLaser::TLaserData Laser_getLaserData() = 0;
 	virtual void OmniRobot_correctOdometer(int x, int z, float alpha) = 0;
 	virtual void OmniRobot_getBasePose(int &x, int &z, float &alpha) = 0;
 	virtual void OmniRobot_getBaseState(RoboCompGenericBase::TBaseState &state) = 0;
