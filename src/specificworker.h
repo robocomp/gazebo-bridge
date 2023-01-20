@@ -84,6 +84,9 @@ class SpecificWorker : public GenericWorker
         // Camera RGBD simple
         RoboCompCameraRGBDSimple::TDepth depthImage;
 
+        // Laser
+        RoboCompLaser::TLaserData laserData;
+
 };
 
 #endif

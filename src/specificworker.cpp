@@ -74,11 +74,24 @@ void SpecificWorker::initialize(int period)
         cerr << "Error subscribing to topic [" << ROBOCOMP_DEPTHCAMERA << "]" << std::endl;
     else
         cout << "SpecificWorker suscribed to [" << ROBOCOMP_DEPTHCAMERA << "]" << std::endl;
+
+    // Subscribe to LIDAR topic by registering a callback
+    if (!node.Subscribe(ROBOCOMP_LIDAR, &SpecificWorker::lidar_cb, this))
+        cerr << "Error subscribing to topic [" << ROBOCOMP_LIDAR << "]" << std::endl;
+    else
+        cout << "SpecificWorker suscribed to [" << ROBOCOMP_LIDAR << "]" << std::endl;
+
 }
 
 void SpecificWorker::compute()
 {
-    // Doing nothing with the compute
+    // DEBUG: LIDAR
+    std::cout << "Laser Data:" << std::endl;
+    for (const auto& data : laserData)
+    {
+        std::cout << "Angle: " << data.angle << " degrees" << std::endl;
+        std::cout << "Distance: " << data.dist << " meters" << std::endl;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -91,30 +104,18 @@ void SpecificWorker::compute()
  */
 void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
 {
-    gz::msgs::Twist dataMsg;
+    RoboCompLaser::TLaserData newLaserData;
 
-    bool allMore = true;
+    // Iterate through ranges array in _msg and create TData structs
     for (int i = 0; i < _msg.ranges_size(); i++)
     {
-        if (_msg.ranges(i) < 1.0)
-        {
-            allMore = false;
-            break;
-        }
-    }
-    if (allMore) // if all bigger than one
-    {
-        dataMsg.mutable_linear()->set_x(0.5);
-        dataMsg.mutable_angular()->set_z(0.0);
-    }
-    else
-    {
-        dataMsg.mutable_linear()->set_x(0.0);
-        dataMsg.mutable_angular()->set_z(0.5);
+        RoboCompLaser::TData data;
+        data.angle = _msg.angle_min() + i * _msg.angle_step();
+        data.dist = _msg.ranges(i);
+        newLaserData.push_back(data);
     }
 
-    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Twist>("/cmd_vel");
-    pub.Publish(dataMsg);
+    SpecificWorker::laserData = newLaserData;
 }
 
 /**
@@ -139,7 +140,7 @@ void SpecificWorker::depth_camera_cb(const gz::msgs::Image &_msg)
 
     // Asignamos el resultado final al atributo de clase
     SpecificWorker::depthImage = newdepthImage;
-    fps.print("FPS:");
+    fps.print("Detph Camera FPS:");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -238,8 +239,7 @@ RoboCompLaser::LaserConfData SpecificWorker::Laser_getLaserConfData()
 
 RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserData()
 {
-//implementCODE
-
+    return SpecificWorker::laserData;
 }
 
 #pragma endregion LIDAR
@@ -308,4 +308,10 @@ int SpecificWorker::startup_check()
 // RoboCompJoystickAdapter::AxisParams
 // RoboCompJoystickAdapter::ButtonParams
 // RoboCompJoystickAdapter::TData
+
+/**************************************/
+// From the RoboCompLaser you can use this types:
+// RoboCompLaser::LaserConfData
+// RoboCompLaser::TData
+
 
