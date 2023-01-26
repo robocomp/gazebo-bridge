@@ -78,11 +78,14 @@ class SpecificWorker : public GenericWorker
         bool startup_check_flag;
         FPSCounter fps;
 
+        // Callbacks functions
         void depth_camera_cb(const gz::msgs::Image &_msg);
         void lidar_cb(const gz::msgs::LaserScan &_msg);
+        void camera_cb(const gz::msgs::Image &_msg);
 
         // Camera RGBD simple
         RoboCompCameraRGBDSimple::TDepth depthImage;
+        RoboCompCameraRGBDSimple::TImage cameraImage;
 
         // Laser
         RoboCompLaser::TLaserData laserData;

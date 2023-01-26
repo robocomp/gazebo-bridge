@@ -81,17 +81,27 @@ void SpecificWorker::initialize(int period)
     else
         cout << "SpecificWorker suscribed to [" << ROBOCOMP_LIDAR << "]" << std::endl;
 
+    // Subscribe to camera topic by registering a callback
+    if (!node.Subscribe(ROBOCOMP_CAMERA, &SpecificWorker::camera_cb, this))
+        cerr << "Error subscribing to topic [" << ROBOCOMP_CAMERA << "]" << std::endl;
+    else
+        cout << "SpecificWorker suscribed to [" << ROBOCOMP_CAMERA << "]" << std::endl;
+
 }
 
 void SpecificWorker::compute()
 {
     // DEBUG: LIDAR
+    /*
     std::cout << "Laser Data:" << std::endl;
     for (const auto& data : laserData)
     {
         std::cout << "Angle: " << data.angle << " degrees" << std::endl;
         std::cout << "Distance: " << data.dist << " meters" << std::endl;
     }
+     */
+
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -143,24 +153,53 @@ void SpecificWorker::depth_camera_cb(const gz::msgs::Image &_msg)
     fps.print("Detph Camera FPS:");
 }
 
+/**
+ * @brief Subscription callback for the CAMERA sensor in Gazebo.
+ *
+ * @param[in] _msg Data structure containing information about the CAMERA Image.
+ */
+void SpecificWorker::camera_cb(const gz::msgs::Image &_msg)
+{
+    RoboCompCameraRGBDSimple::TImage newImage;
+
+    // Se establece el periodo de refresco de la imagen en milisegundos.
+    newImage.period = 100;
+
+    // Obtener la resolución de la imagen.
+    newImage.width = _msg.width();
+    newImage.height = _msg.height();
+
+    // Obtener la imagen y asignarla al tipo TImage de Robocomp
+    newImage.image.assign(_msg.data().begin(), _msg.data().end());
+    newImage.compressed = false;
+
+    // Asignamos el resultado final al atributo de clase
+    this->cameraImage = newImage;
+    fps.print("Camera FPS:");
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma region SimpleCameraRGBD
 
 RoboCompCameraRGBDSimple::TRGBD SpecificWorker::CameraRGBDSimple_getAll(std::string camera)
 {
-//implementCODE
+    RoboCompCameraRGBDSimple::TRGBD newRGBD;
 
+    newRGBD.image = this->cameraImage;
+    newRGBD.depth = this->depthImage;
+    // TODO: Que devuelva tambien la nube de puntos.
+
+    return newRGBD;
 }
 
 RoboCompCameraRGBDSimple::TDepth SpecificWorker::CameraRGBDSimple_getDepth(std::string camera)
 {
-    return SpecificWorker::depthImage;
+    return this->depthImage;
 }
 
 RoboCompCameraRGBDSimple::TImage SpecificWorker::CameraRGBDSimple_getImage(std::string camera)
 {
-//implementCODE
-   
+    return this->cameraImage;
 }
 
 RoboCompCameraRGBDSimple::TPoints SpecificWorker::CameraRGBDSimple_getPoints(std::string camera)
