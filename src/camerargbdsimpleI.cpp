@@ -44,8 +44,3 @@ RoboCompCameraRGBDSimple::TImage CameraRGBDSimpleI::getImage(std::string camera,
 	return worker->CameraRGBDSimple_getImage(camera);
 }
 
-RoboCompCameraRGBDSimple::TPoints CameraRGBDSimpleI::getPoints(std::string camera, const Ice::Current&)
-{
-	return worker->CameraRGBDSimple_getPoints(camera);
-}
-

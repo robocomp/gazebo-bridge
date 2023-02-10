@@ -47,7 +47,6 @@ class SpecificWorker : public GenericWorker
         RoboCompCameraRGBDSimple::TRGBD CameraRGBDSimple_getAll(std::string camera);
         RoboCompCameraRGBDSimple::TDepth CameraRGBDSimple_getDepth(std::string camera);
         RoboCompCameraRGBDSimple::TImage CameraRGBDSimple_getImage(std::string camera);
-        RoboCompCameraRGBDSimple::TPoints CameraRGBDSimple_getPoints(std::string camera);
         // LIDAR
         RoboCompLaser::TLaserData Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState);
         RoboCompLaser::LaserConfData Laser_getLaserConfData();
@@ -78,10 +77,8 @@ class SpecificWorker : public GenericWorker
         bool startup_check_flag;
         FPSCounter fps;
 
-        // Callbacks functions
-        void depth_camera_cb(const gz::msgs::Image &_msg);
-        void lidar_cb(const gz::msgs::LaserScan &_msg);
-        void camera_cb(const gz::msgs::Image &_msg);
+        // Components parameters
+        std::string odometryTargetName;
 
         // Camera RGBD simple
         RoboCompCameraRGBDSimple::TDepth depthImage;
@@ -89,6 +86,20 @@ class SpecificWorker : public GenericWorker
 
         // Laser
         RoboCompLaser::TLaserData laserData;
+
+        // Odometer
+        RoboCompGenericBase::TBaseState odometryTargetState;
+
+
+    // Callbacks functions
+        void depth_camera_cb(const gz::msgs::Image &_msg);
+        void lidar_cb(const gz::msgs::LaserScan &_msg);
+        void camera_cb(const gz::msgs::Image &_msg);
+        void odometry_cb(const gz::msgs::Odometry &_msg);
+
+
+
+
 
 };
 

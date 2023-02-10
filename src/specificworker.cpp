@@ -47,6 +47,8 @@ SpecificWorker::~SpecificWorker()
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 {
+    odometryTargetName = params["odometry_target_name"].value;
+
 	return true;
 }
 
@@ -87,6 +89,15 @@ void SpecificWorker::initialize(int period)
     else
         cout << "SpecificWorker suscribed to [" << ROBOCOMP_CAMERA << "]" << std::endl;
 
+    // If target is specified
+    if(odometryTargetName != "none"){
+        // Subscribe to odometry topic by registering a callback
+        string completeOdometryTopic = "/model/" + odometryTargetName + "/odometry";
+        if (!node.Subscribe(completeOdometryTopic, &SpecificWorker::odometry_cb, this))
+            cerr << "Error subscribing to topic [" << completeOdometryTopic << "]" << std::endl;
+        else
+            cout << "SpecificWorker suscribed to [" << completeOdometryTopic << "]" << std::endl;
+    }
 }
 
 void SpecificWorker::compute()
@@ -106,6 +117,21 @@ void SpecificWorker::compute()
 
 ///////////////////////////////////////////////////////////////////////////////////
 #pragma region Gazebo_CallbackFunctions
+
+/**
+ * @brief Subscription callback for the odometry values.
+ *
+ * @param[in] _msg Data structure containing information about the odometer.
+ */
+void SpecificWorker::odometry_cb(const gz::msgs::Odometry &_msg)
+{
+    // DEBUG
+    cout << "Odometry: x" << _msg.pose().position().x() << endl;
+    cout << "Odometry: y" << _msg.pose().position().y() << endl;
+    cout << "Odometry: z" << _msg.pose().position().z() << endl;
+
+    // TODO: Cruzar gz::msgs::Odometry con RoboCompGenericBase::TBaseState
+}
 
 /**
  * @brief Subscription callback for the LIDAR sensor in Gazebo.
@@ -200,12 +226,6 @@ RoboCompCameraRGBDSimple::TDepth SpecificWorker::CameraRGBDSimple_getDepth(std::
 RoboCompCameraRGBDSimple::TImage SpecificWorker::CameraRGBDSimple_getImage(std::string camera)
 {
     return this->cameraImage;
-}
-
-RoboCompCameraRGBDSimple::TPoints SpecificWorker::CameraRGBDSimple_getPoints(std::string camera)
-{
-//implementCODE
-
 }
 
 #pragma endregion SimpleCameraRGBD
