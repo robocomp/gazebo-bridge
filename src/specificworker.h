@@ -60,6 +60,19 @@ class SpecificWorker : public GenericWorker
         void OmniRobot_setOdometerPose(int x, int z, float alpha);
         void OmniRobot_setSpeedBase(float advx, float advz, float rot);
         void OmniRobot_stopBase();
+        // IMU
+        RoboCompIMU::Acceleration IMU_getAcceleration();
+        RoboCompIMU::Gyroscope IMU_getAngularVel();
+        RoboCompIMU::DataImu IMU_getDataImu();
+        RoboCompIMU::Magnetic IMU_getMagneticFields();
+        RoboCompIMU::Orientation IMU_getOrientation();
+        void IMU_resetImu();
+        // JOINTMOTORSIMPLE
+        RoboCompJointMotorSimple::MotorParams JointMotorSimple_getMotorParams(std::string motor);
+        RoboCompJointMotorSimple::MotorState JointMotorSimple_getMotorState(std::string motor);
+        void JointMotorSimple_setPosition(std::string name, RoboCompJointMotorSimple::MotorGoalPosition goal);
+        void JointMotorSimple_setVelocity(std::string name, RoboCompJointMotorSimple::MotorGoalVelocity goal);
+        void JointMotorSimple_setZeroPos(std::string name);
 
         // JOYSTICK
         void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
@@ -90,12 +103,19 @@ class SpecificWorker : public GenericWorker
         // Odometer
         RoboCompGenericBase::TBaseState odometryTargetState;
 
+        // Imu
+        RoboCompIMU::Acceleration imuAcceleration;
+        RoboCompIMU::Gyroscope imuAngularVel;
+        RoboCompIMU::DataImu imuDataImu;
+        RoboCompIMU::Magnetic imuMagneticFields;
+        RoboCompIMU::Orientation imuOrientation;
 
-    // Callbacks functions
+        // Callbacks functions
         void depth_camera_cb(const gz::msgs::Image &_msg);
         void lidar_cb(const gz::msgs::LaserScan &_msg);
         void camera_cb(const gz::msgs::Image &_msg);
         void odometry_cb(const gz::msgs::Odometry &_msg);
+        void imu_cb(const gz::msgs::IMU &_msg);
 
 
 

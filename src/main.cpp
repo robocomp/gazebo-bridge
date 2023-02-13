@@ -82,6 +82,8 @@
 #include "commonbehaviorI.h"
 
 #include <camerargbdsimpleI.h>
+#include <imuI.h>
+#include <jointmotorsimpleI.h>
 #include <laserI.h>
 #include <omnirobotI.h>
 #include <joystickadapterI.h>
@@ -209,6 +211,42 @@ int ::Gazebo2Robocomp::run(int argc, char* argv[])
 		}
 		catch (const IceStorm::TopicExists&){
 			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for CameraRGBDSimple\n";
+		}
+
+
+		try
+		{
+			// Server adapter creation and publication
+			if (not GenericMonitor::configGetString(communicator(), prefix, "IMU.Endpoints", tmp, ""))
+			{
+				cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy IMU";
+			}
+			Ice::ObjectAdapterPtr adapterIMU = communicator()->createObjectAdapterWithEndpoints("IMU", tmp);
+			auto imu = std::make_shared<IMUI>(worker);
+			adapterIMU->add(imu, Ice::stringToIdentity("imu"));
+			adapterIMU->activate();
+			cout << "[" << PROGRAM_NAME << "]: IMU adapter created in port " << tmp << endl;
+		}
+		catch (const IceStorm::TopicExists&){
+			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for IMU\n";
+		}
+
+
+		try
+		{
+			// Server adapter creation and publication
+			if (not GenericMonitor::configGetString(communicator(), prefix, "JointMotorSimple.Endpoints", tmp, ""))
+			{
+				cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy JointMotorSimple";
+			}
+			Ice::ObjectAdapterPtr adapterJointMotorSimple = communicator()->createObjectAdapterWithEndpoints("JointMotorSimple", tmp);
+			auto jointmotorsimple = std::make_shared<JointMotorSimpleI>(worker);
+			adapterJointMotorSimple->add(jointmotorsimple, Ice::stringToIdentity("jointmotorsimple"));
+			adapterJointMotorSimple->activate();
+			cout << "[" << PROGRAM_NAME << "]: JointMotorSimple adapter created in port " << tmp << endl;
+		}
+		catch (const IceStorm::TopicExists&){
+			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for JointMotorSimple\n";
 		}
 
 

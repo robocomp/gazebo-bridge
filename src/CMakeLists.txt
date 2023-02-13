@@ -25,6 +25,8 @@ SET ( SOURCES
   commonbehaviorI.cpp
   genericworker.cpp
   camerargbdsimpleI.cpp
+  imuI.cpp
+  jointmotorsimpleI.cpp
   laserI.cpp
   omnirobotI.cpp
   joystickadapterI.cpp
@@ -38,8 +40,8 @@ FIND_PACKAGE( Ice REQUIRED COMPONENTS Ice++11 IceStorm++11)
 
 #ROBOCOMP
 ROBOCOMP_INITIALIZE( $ENV{ROBOCOMP}/ )
-ROBOCOMP_IDSL_TO_ICE( CommonBehavior CameraRGBDSimple GenericBase JoystickAdapter Laser OmniRobot)
-ROBOCOMP_ICE_TO_SRC( CommonBehavior CameraRGBDSimple GenericBase JoystickAdapter Laser OmniRobot)
+ROBOCOMP_IDSL_TO_ICE( CommonBehavior CameraRGBDSimple GenericBase IMU JointMotorSimple JoystickAdapter Laser OmniRobot)
+ROBOCOMP_ICE_TO_SRC( CommonBehavior CameraRGBDSimple GenericBase IMU JointMotorSimple JoystickAdapter Laser OmniRobot)
 SET (EXECUTABLE_OUTPUT_PATH ${RC_COMPONENT_DEVEL_PATH}/bin)
 
 

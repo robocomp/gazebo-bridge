@@ -71,6 +71,8 @@ void SpecificWorker::initialize(int period)
 
     #pragma endregion Robocomp
 
+    // TODO: Extraer llamadas de suscripción a un método.
+
     // Subscribe to depth_camera topic by registering a callback
     if (!node.Subscribe(ROBOCOMP_DEPTHCAMERA, &SpecificWorker::depth_camera_cb, this))
         cerr << "Error subscribing to topic [" << ROBOCOMP_DEPTHCAMERA << "]" << std::endl;
@@ -88,6 +90,12 @@ void SpecificWorker::initialize(int period)
         cerr << "Error subscribing to topic [" << ROBOCOMP_CAMERA << "]" << std::endl;
     else
         cout << "SpecificWorker suscribed to [" << ROBOCOMP_CAMERA << "]" << std::endl;
+
+    // Subscribe to imu topic by registering a callback
+    if (!node.Subscribe(ROBOCOMP_IMU, &SpecificWorker::imu_cb, this))
+        cerr << "Error subscribing to topic [" << ROBOCOMP_IMU << "]" << std::endl;
+    else
+        cout << "SpecificWorker suscribed to [" << ROBOCOMP_IMU << "]" << std::endl;
 
     // If target is specified
     if(odometryTargetName != "none"){
@@ -204,6 +212,26 @@ void SpecificWorker::camera_cb(const gz::msgs::Image &_msg)
     fps.print("Camera FPS:");
 }
 
+/**
+ * @brief Subscription callback for the IMU sensor in Gazebo.
+ *
+ * @param[in] _msg Data structure containing information about the IMU data.
+ */
+void SpecificWorker::imu_cb(const gz::msgs::IMU &_msg)
+{
+    cout << "IMU CALLBACK" << endl;
+    //TODO: implement
+
+
+    // Imu
+    RoboCompIMU::Acceleration imuAcceleration;
+    RoboCompIMU::Gyroscope imuAngularVel;
+    RoboCompIMU::DataImu imuDataImu;
+    RoboCompIMU::Magnetic imuMagneticFields;
+    RoboCompIMU::Orientation imuOrientation;
+
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma region SimpleCameraRGBD
 
@@ -302,6 +330,77 @@ RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserData()
 }
 
 #pragma endregion LIDAR
+
+#pragma region IMU
+
+RoboCompIMU::Acceleration SpecificWorker::IMU_getAcceleration()
+{
+    return this->imuAcceleration;
+}
+
+RoboCompIMU::Gyroscope SpecificWorker::IMU_getAngularVel()
+{
+    return this->imuAngularVel;
+}
+
+RoboCompIMU::DataImu SpecificWorker::IMU_getDataImu()
+{
+    return this->imuDataImu;
+}
+
+RoboCompIMU::Magnetic SpecificWorker::IMU_getMagneticFields()
+{
+    return this->imuMagneticFields;
+}
+
+RoboCompIMU::Orientation SpecificWorker::IMU_getOrientation()
+{
+    return this->imuOrientation;
+}
+
+void SpecificWorker::IMU_resetImu()
+{
+//implementCODE
+
+}
+
+#pragma endregion IMU
+
+#pragma region JointMotorSimple
+
+RoboCompJointMotorSimple::MotorParams SpecificWorker::JointMotorSimple_getMotorParams(std::string motor)
+{
+//implementCODE
+
+}
+
+RoboCompJointMotorSimple::MotorState SpecificWorker::JointMotorSimple_getMotorState(std::string motor)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::JointMotorSimple_setPosition(std::string name, RoboCompJointMotorSimple::MotorGoalPosition goal)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::JointMotorSimple_setVelocity(std::string name, RoboCompJointMotorSimple::MotorGoalVelocity goal)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::JointMotorSimple_setZeroPos(std::string name)
+{
+//implementCODE
+
+}
+
+#pragma endregion JointMotorSimple
+
+
 
 /**
  * @brief Subscription callback for the sendData method of the JoystickAdapter interface.

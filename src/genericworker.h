@@ -26,6 +26,8 @@
 
 #include <CameraRGBDSimple.h>
 #include <GenericBase.h>
+#include <IMU.h>
+#include <JointMotorSimple.h>
 #include <JoystickAdapter.h>
 #include <Laser.h>
 #include <OmniRobot.h>
@@ -55,6 +57,17 @@ public:
 	virtual RoboCompCameraRGBDSimple::TRGBD CameraRGBDSimple_getAll(std::string camera) = 0;
 	virtual RoboCompCameraRGBDSimple::TDepth CameraRGBDSimple_getDepth(std::string camera) = 0;
 	virtual RoboCompCameraRGBDSimple::TImage CameraRGBDSimple_getImage(std::string camera) = 0;
+	virtual RoboCompIMU::Acceleration IMU_getAcceleration() = 0;
+	virtual RoboCompIMU::Gyroscope IMU_getAngularVel() = 0;
+	virtual RoboCompIMU::DataImu IMU_getDataImu() = 0;
+	virtual RoboCompIMU::Magnetic IMU_getMagneticFields() = 0;
+	virtual RoboCompIMU::Orientation IMU_getOrientation() = 0;
+	virtual void IMU_resetImu() = 0;
+	virtual RoboCompJointMotorSimple::MotorParams JointMotorSimple_getMotorParams(std::string motor) = 0;
+	virtual RoboCompJointMotorSimple::MotorState JointMotorSimple_getMotorState(std::string motor) = 0;
+	virtual void JointMotorSimple_setPosition(std::string name, RoboCompJointMotorSimple::MotorGoalPosition goal) = 0;
+	virtual void JointMotorSimple_setVelocity(std::string name, RoboCompJointMotorSimple::MotorGoalVelocity goal) = 0;
+	virtual void JointMotorSimple_setZeroPos(std::string name) = 0;
 	virtual RoboCompLaser::TLaserData Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState) = 0;
 	virtual RoboCompLaser::LaserConfData Laser_getLaserConfData() = 0;
 	virtual RoboCompLaser::TLaserData Laser_getLaserData() = 0;
