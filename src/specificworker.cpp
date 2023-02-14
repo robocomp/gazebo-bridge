@@ -219,17 +219,37 @@ void SpecificWorker::camera_cb(const gz::msgs::Image &_msg)
  */
 void SpecificWorker::imu_cb(const gz::msgs::IMU &_msg)
 {
-    cout << "IMU CALLBACK" << endl;
-    //TODO: implement
 
+    // Aceleración linear
+    RoboCompIMU::Acceleration newAcceleration;
+    newAcceleration.XAcc = _msg.linear_acceleration().x();
+    newAcceleration.YAcc = _msg.linear_acceleration().y();
+    newAcceleration.ZAcc = _msg.linear_acceleration().z();
+    imuAcceleration = newAcceleration;
 
-    // Imu
-    RoboCompIMU::Acceleration imuAcceleration;
-    RoboCompIMU::Gyroscope imuAngularVel;
-    RoboCompIMU::DataImu imuDataImu;
-    RoboCompIMU::Magnetic imuMagneticFields;
-    RoboCompIMU::Orientation imuOrientation;
+    // Velocidad angular
+    RoboCompIMU::Gyroscope newAngularVel;
+    newAngularVel.XGyr = _msg.angular_velocity().x();
+    newAngularVel.YGyr = _msg.angular_velocity().y();
+    newAngularVel.ZGyr = _msg.angular_velocity().z();
+    imuAngularVel = newAngularVel;
 
+    // Orientation
+    RoboCompIMU::Orientation newOrientation;
+    newOrientation.Pitch = _msg.orientation().x();
+    newOrientation.Roll = _msg.orientation().y();
+    newOrientation.Yaw = _msg.orientation().z();
+    imuOrientation = newOrientation;
+
+    // Magnetic field
+    RoboCompIMU::Magnetic newMagneticFields;
+    // TODO: Recoger datos de magnetismo.
+
+    // IMU Data
+    imuDataImu.acc = newAcceleration;
+    imuDataImu.gyro = newAngularVel;
+    imuDataImu.rot = newOrientation;
+    imuDataImu.mag = newMagneticFields;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -360,8 +380,18 @@ RoboCompIMU::Orientation SpecificWorker::IMU_getOrientation()
 
 void SpecificWorker::IMU_resetImu()
 {
-//implementCODE
+    // Declaration of Gazebo IMU message
+    gz::msgs::IMU dataMsg;
+    // Declaration of Gazebo publisher
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::IMU>(ROBOCOMP_IMU);
 
+    // Clear imu data. Maybe not necessary.
+    dataMsg.clear_orientation();
+    dataMsg.clear_angular_velocity();
+    dataMsg.clear_linear_acceleration();
+
+    // Publish to Gazebo with the actual Joystick output.
+    pub.Publish(dataMsg);
 }
 
 #pragma endregion IMU
