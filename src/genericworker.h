@@ -57,6 +57,7 @@ public:
 	virtual RoboCompCameraRGBDSimple::TRGBD CameraRGBDSimple_getAll(std::string camera) = 0;
 	virtual RoboCompCameraRGBDSimple::TDepth CameraRGBDSimple_getDepth(std::string camera) = 0;
 	virtual RoboCompCameraRGBDSimple::TImage CameraRGBDSimple_getImage(std::string camera) = 0;
+	virtual RoboCompCameraRGBDSimple::TPoints CameraRGBDSimple_getPoints(std::string camera) = 0;
 	virtual RoboCompIMU::Acceleration IMU_getAcceleration() = 0;
 	virtual RoboCompIMU::Gyroscope IMU_getAngularVel() = 0;
 	virtual RoboCompIMU::DataImu IMU_getDataImu() = 0;
