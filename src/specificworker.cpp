@@ -252,6 +252,8 @@ void SpecificWorker::imu_cb(const gz::msgs::IMU &_msg)
     imuDataImu.mag = newMagneticFields;
 }
 
+#pragma endregion Gazebo_CallbackFunctions
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma region SimpleCameraRGBD
 
