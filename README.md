@@ -19,6 +19,7 @@ other Robocomp components or sending topic and commands to the simulation.
 </p>
 
 ```bash
+sudo apt-get update
 sudo apt-get install libgz-transport12
 ```
 
