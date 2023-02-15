@@ -15,7 +15,7 @@ other Robocomp components or sending topic and commands to the simulation.
 <p> Next, you need to install the <a href="https://gazebosim.org/docs/garden/install_ubuntu">Gazebo</a> simulator. (Gazebo Garden is the latest version tested.)
 </p>
 
-<p> Lastly, you need to install the **gz-transport12** library.
+<p> Lastly, you need to install the <strong>gz-transport12</strong> library.
 </p>
 
 ```bash
@@ -45,7 +45,7 @@ make
 ```
 
 <p> Notice that we enter via parameter a config file. This file can be edited or duplicated 
-for been used with your own parameters. </p>
+for been used with your own parameter values. </p>
 
 
 ## Config Parameters
@@ -121,8 +121,9 @@ component are the following:
 ## Example Usage
 
 <p>
-For example, if I want to use Gazebo2Robocomp to view a camera on my 
-robot in the simulation, I would do the following:
+For example, if you want to use Gazebo2Robocomp to move a robot using a Joystick,
+you can download this <a href="https://github.com/">Inverted Pendulum</a> Gazebo world and follow the
+the following:
 </p>
 
 ### Check the .sdf file
@@ -134,34 +135,40 @@ one of the topics supported by the component.
 </p>
 
 <p>
-This camera would be valid, for example.
+This differential drive plugin would be valid, for example.
 </p>
 
 ```xml
-<!-- RGB Camera sensor -->
-<sensor name="camera" type="camera">
-  <camera>
-    <horizontal_fov>1.047</horizontal_fov>
-    <image>
-      <width>320</width>
-      <height>240</height>
-    </image>
-    <clip>
-      <near>0.1</near>
-      <far>100</far>
-    </clip>
-  </camera>
-  <pose relative_to='lidar_frame'>0 0 0 0 0 0</pose>
-  <always_on>1</always_on>
-  <update_rate>30</update_rate>
-  <visualize>true</visualize>
-    <!-- Subscripted to a valid topic -->
-  <topic>camera</topic>
-</sensor>
+<!-- Differential drive plugin -->
+<plugin
+        filename="libignition-gazebo-diff-drive-system.so"
+        name="ignition::gazebo::systems::DiffDrive">
+    <left_joint>left_wheel_joint</left_joint>
+    <right_joint>right_wheel_joint</right_joint>
+    <wheel_separation>0.4</wheel_separation>
+    <wheel_radius>0.07</wheel_radius>
+    <odom_publish_frequency>1</odom_publish_frequency>
+    <odom_topic>odometry</odom_topic>
+    <!-- Subscription to a valid Gazebo2Robocomp topic -->
+    <topic>cmd_vel</topic>
+</plugin>
 ```
 
-### Start Simulation
-### Start Gazebo2Robocomp
-### Start Robocomp RGB viewer
+### Start the simulation and Robocomp components 
+
+<p> Now you can start the downloaded world as a normal Gazebo project
+and start the simulation.
+</p>
+
+<p>
+Then, run the Robocomp components involved, so far: <br>
+<strong>Gazebo2Robocomp</strong> for communication between Robocomp and Gazebo <br>
+<strong>JoystickAdapter</strong> for sending inputs from the Joystick. You can find this component among 
+the <a href="https://github.com/robocomp/robocomp-robolab"> standard Robocomp components</a>.
+</p>
+
+<p>
+You should now be able to move your robot using the Joystick. Have fun!
+</p>
 
 
