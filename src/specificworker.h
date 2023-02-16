@@ -119,7 +119,8 @@ class SpecificWorker : public GenericWorker
         void odometry_cb(const gz::msgs::Odometry &_msg);
         void imu_cb(const gz::msgs::IMU &_msg);
 
-
+        // Auxiliar functions
+        void printNotImplementedWarningMessage(string functionName);
 
 
 

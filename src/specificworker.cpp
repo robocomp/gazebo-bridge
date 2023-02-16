@@ -284,50 +284,50 @@ RoboCompCameraRGBDSimple::TImage SpecificWorker::CameraRGBDSimple_getImage(std::
 
 void SpecificWorker::OmniRobot_correctOdometer(int x, int z, float alpha)
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("OmniRobot_correctOdometer");
 }
 
 void SpecificWorker::OmniRobot_getBasePose(int &x, int &z, float &alpha)
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("OmniRobot_getBasePose");
 }
 
 void SpecificWorker::OmniRobot_getBaseState(RoboCompGenericBase::TBaseState &state)
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("OmniRobot_getBaseState");
 }
 
 void SpecificWorker::OmniRobot_resetOdometer()
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("OmniRobot_resetOdometer");
 }
 
 void SpecificWorker::OmniRobot_setOdometer(RoboCompGenericBase::TBaseState state)
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("OmniRobot_setOdometer");
 }
 
 void SpecificWorker::OmniRobot_setOdometerPose(int x, int z, float alpha)
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("OmniRobot_setOdometerPose");
 }
 
 void SpecificWorker::OmniRobot_setSpeedBase(float advx, float advz, float rot)
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("OmniRobot_setSpeedBase");
 }
 
 void SpecificWorker::OmniRobot_stopBase()
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("OmniRobot_stopBase");
 }
 
 #pragma endregion OmniRobot
@@ -336,14 +336,14 @@ void SpecificWorker::OmniRobot_stopBase()
 
 RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState)
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("Laser_getLaserAndBStateData");
 }
 
 RoboCompLaser::LaserConfData SpecificWorker::Laser_getLaserConfData()
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("Laser_getLaserConfData");
 }
 
 RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserData()
@@ -402,32 +402,40 @@ void SpecificWorker::IMU_resetImu()
 
 RoboCompJointMotorSimple::MotorParams SpecificWorker::JointMotorSimple_getMotorParams(std::string motor)
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("JointMotorSimple_getMotorParams");
 }
 
 RoboCompJointMotorSimple::MotorState SpecificWorker::JointMotorSimple_getMotorState(std::string motor)
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("JointMotorSimple_getMotorState");
 }
 
 void SpecificWorker::JointMotorSimple_setPosition(std::string name, RoboCompJointMotorSimple::MotorGoalPosition goal)
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("JointMotorSimple_setPosition");
 }
 
 void SpecificWorker::JointMotorSimple_setVelocity(std::string name, RoboCompJointMotorSimple::MotorGoalVelocity goal)
 {
-//implementCODE
+    // Declaration of the structure to be filled
+    gz::msgs::Twist dataMsg;
+    // Declaration of Gazebo publisher
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Twist>(ROBOCOMP_JOINTMOTORSIMPLE);
 
+    // Setting the velocity
+    dataMsg.mutable_linear()->set_x(goal.velocity);
+
+    // Publish to Gazebo with the actual Joystick output.
+    pub.Publish(dataMsg);
 }
 
 void SpecificWorker::JointMotorSimple_setZeroPos(std::string name)
 {
-//implementCODE
-
+    // TODO: Implement
+    printNotImplementedWarningMessage("JointMotorSimple_setZeroPos");
 }
 
 #pragma endregion JointMotorSimple
@@ -479,6 +487,11 @@ int SpecificWorker::startup_check()
     std::cout << "Startup check" << std::endl;
     QTimer::singleShot(200, qApp, SLOT(quit()));
     return 0;
+}
+
+void SpecificWorker::printNotImplementedWarningMessage(string functionName)
+{
+    cout << "Function not implemented used: " << "[" << functionName << "]" << std::endl;
 }
 
 /**************************************/

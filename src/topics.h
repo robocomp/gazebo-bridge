@@ -6,6 +6,7 @@
 #define GAZEBO2ROBOCOMP_TOPICS_H
 
 static const std::string ROBOCOMP_JOYSTICKADAPTER = "/cmd_vel";
+static const std::string ROBOCOMP_JOINTMOTORSIMPLE = "/cmd_vel";
 static const std::string ROBOCOMP_DEPTHCAMERA = "/depth_camera";
 static const std::string ROBOCOMP_LIDAR = "/lidar";
 static const std::string ROBOCOMP_CAMERA = "/camera";
