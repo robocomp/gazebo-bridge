@@ -143,10 +143,13 @@ void SpecificWorker::odometry_cb(const gz::msgs::Odometry &_msg)
     newOdometryData.advVx = _msg.twist().linear().x();
     newOdometryData.advVz = _msg.twist().linear().y();
 
+    // Valores angulares
+    newOdometryData.alpha = _msg.twist().angular().z();
+
     // Se está moviendo si alguna de las velocidades es mayor que 0
     newOdometryData.isMoving = (abs(newOdometryData.advVx)  > .01 || abs(newOdometryData.advVz)  > .01);
 
-    cout << "Is moving: " << newOdometryData.isMoving << endl;
+    // COMPROBAR --> newOdometryData.rotV = _msg.pose().orientation().z();
 
     odometryTargetState = newOdometryData;
 }
@@ -300,8 +303,9 @@ void SpecificWorker::OmniRobot_correctOdometer(int x, int z, float alpha)
 
 void SpecificWorker::OmniRobot_getBasePose(int &x, int &z, float &alpha)
 {
-    // TODO: Implement
-    printNotImplementedWarningMessage("OmniRobot_getBasePose");
+    x = odometryTargetState.x;
+    z = odometryTargetState.z;
+    alpha = odometryTargetState.alpha;
 }
 
 void SpecificWorker::OmniRobot_getBaseState(RoboCompGenericBase::TBaseState &state)
@@ -311,8 +315,20 @@ void SpecificWorker::OmniRobot_getBaseState(RoboCompGenericBase::TBaseState &sta
 
 void SpecificWorker::OmniRobot_resetOdometer()
 {
-    // TODO: Implement
-    printNotImplementedWarningMessage("OmniRobot_resetOdometer");
+    // Declaration of Gazebo Odometry message
+    gz::msgs::Odometry dataMsg;
+    // Declaration of Gazebo publisher
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Odometry>(ROBOCOMP_IMU);
+
+    // ROBOCOMP_ODOMETRY ??? -> Definir en el topic.h
+
+    // Clear odometry data. Maybe not necessary.
+    dataMsg.clear_header();
+    dataMsg.clear_pose();
+    dataMsg.clear_twist();
+
+    // Publish to Gazebo with the actual Joystick output.
+    pub.Publish(dataMsg);
 }
 
 void SpecificWorker::OmniRobot_setOdometer(RoboCompGenericBase::TBaseState state)
