@@ -133,12 +133,22 @@ void SpecificWorker::compute()
  */
 void SpecificWorker::odometry_cb(const gz::msgs::Odometry &_msg)
 {
-    // DEBUG
-    cout << "Odometry: x" << _msg.pose().position().x() << endl;
-    cout << "Odometry: y" << _msg.pose().position().y() << endl;
-    cout << "Odometry: z" << _msg.pose().position().z() << endl;
+    RoboCompGenericBase::TBaseState newOdometryData;
+    // Valores de posición
+    newOdometryData.x = _msg.pose().position().x();
+    // En Gazebo el eje Y es el que representa el movimiento lateral.
+    newOdometryData.z = _msg.pose().position().y();
 
-    // TODO: Cruzar gz::msgs::Odometry con RoboCompGenericBase::TBaseState
+    // Valores de velocidad
+    newOdometryData.advVx = _msg.twist().linear().x();
+    newOdometryData.advVz = _msg.twist().linear().y();
+
+    // Se está moviendo si alguna de las velocidades es mayor que 0
+    newOdometryData.isMoving = (abs(newOdometryData.advVx)  > .01 || abs(newOdometryData.advVz)  > .01);
+
+    cout << "Is moving: " << newOdometryData.isMoving << endl;
+
+    odometryTargetState = newOdometryData;
 }
 
 /**
@@ -296,8 +306,7 @@ void SpecificWorker::OmniRobot_getBasePose(int &x, int &z, float &alpha)
 
 void SpecificWorker::OmniRobot_getBaseState(RoboCompGenericBase::TBaseState &state)
 {
-    // TODO: Implement
-    printNotImplementedWarningMessage("OmniRobot_getBaseState");
+    state = odometryTargetState;
 }
 
 void SpecificWorker::OmniRobot_resetOdometer()
