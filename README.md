@@ -154,7 +154,6 @@ This differential drive plugin would be valid, for example.
     <wheel_separation>0.4</wheel_separation>
     <wheel_radius>0.07</wheel_radius>
     <odom_publish_frequency>1</odom_publish_frequency>
-    <odom_topic>odometry</odom_topic>
     <!-- Subscription to a valid Gazebo2Robocomp topic -->
     <topic>cmd_vel</topic>
 </plugin>
