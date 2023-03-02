@@ -172,6 +172,16 @@ void SpecificWorker::odometry_cb(const gz::msgs::Odometry &_msg)
 void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
 {
     RoboCompLaser::TLaserData newLaserData;
+    RoboCompLaser::LaserConfData newLaserConfData;
+
+    // ## DATOS DE CONFIGURACION DE LOS LASERES
+
+    newLaserConfData.maxDegrees = _msg.angle_max();
+    newLaserConfData.maxRange = _msg.range_max();
+    newLaserConfData.minRange = _msg.range_min();
+    newLaserConfData.angleRes = _msg.angle_step();
+
+    // ## DATOS DE LOS LÁSERES
 
     // Iterate through ranges array in _msg and create TData structs
     for (int i = 0; i < _msg.ranges_size(); i++)
@@ -182,7 +192,8 @@ void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
         newLaserData.push_back(data);
     }
 
-    SpecificWorker::laserData = newLaserData;
+    laserData = newLaserData;
+    laserDataConf = newLaserConfData;
 }
 
 /**
@@ -347,15 +358,15 @@ void SpecificWorker::OmniRobot_setOdometer(RoboCompGenericBase::TBaseState state
     gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Odometry>(completeOdometryTopic);
 
     // Valores de posición
-    dataMsg.pose().position().x()  = state.correctedX;
-    dataMsg.pose().position().y() = state.correctedZ;
+    dataMsg.mutable_pose()->mutable_position()->set_x(state.correctedX);
+    dataMsg.mutable_pose()->mutable_position()->set_y(state.correctedZ);
 
     // Valores de velocidad
-    dataMsg.twist().linear().x() = state.advVx;
-    dataMsg.twist().linear().y() = state.advVz;
+    dataMsg.mutable_twist()->mutable_linear()->set_x(state.advVx);
+    dataMsg.mutable_twist()->mutable_linear()->set_y(state.advVz);
 
     // Valor de la velocidad de rotación
-    dataMsg.twist().angular().z() = state.rotV;
+    dataMsg.mutable_twist()->mutable_angular()->set_z(state.rotV);
 
     // Publish to Gazebo with the actual Joystick output.
     pub.Publish(dataMsg);
@@ -385,14 +396,13 @@ void SpecificWorker::OmniRobot_stopBase()
 
 RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState)
 {
-    // TODO: Implement
-    printNotImplementedWarningMessage("Laser_getLaserAndBStateData");
+    bState = odometryTargetState;
+    return laserData;
 }
 
 RoboCompLaser::LaserConfData SpecificWorker::Laser_getLaserConfData()
 {
-    // TODO: Implement
-    printNotImplementedWarningMessage("Laser_getLaserConfData");
+    return laserDataConf;
 }
 
 RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserData()

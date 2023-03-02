@@ -101,6 +101,7 @@ class SpecificWorker : public GenericWorker
 
         // Laser
         RoboCompLaser::TLaserData laserData;
+        RoboCompLaser::LaserConfData laserDataConf;
 
         // Odometer
         RoboCompGenericBase::TBaseState odometryTargetState;
