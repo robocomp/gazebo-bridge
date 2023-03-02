@@ -104,6 +104,7 @@ class SpecificWorker : public GenericWorker
 
         // Odometer
         RoboCompGenericBase::TBaseState odometryTargetState;
+        string completeOdometryTopic;
 
         // Imu
         RoboCompIMU::Acceleration imuAcceleration;

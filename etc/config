@@ -3,7 +3,10 @@ CommonBehavior.Endpoints=tcp -p 10217
 # Endpoints for implements interfaces
 CameraRGBDSimple.Endpoints=tcp -p 10096
 Laser.Endpoints=tcp -p 10003
+IMU.Endpoints=tcp -p 10005
+JointMotorSimple.Endpoints=tcp -p 10006
 OmniRobot.Endpoints=tcp -p 10004
+
 
 
 # Endpoints for subscriptions interfaces

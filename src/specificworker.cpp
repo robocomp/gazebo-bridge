@@ -58,6 +58,7 @@ void SpecificWorker::initialize(int period)
 {
     #pragma region Robocomp
 
+
 	std::cout << "Initialize worker" << std::endl;
 	this->Period = period;
 	if(this->startup_check_flag)
@@ -70,6 +71,8 @@ void SpecificWorker::initialize(int period)
 	}
 
     #pragma endregion Robocomp
+
+    completeOdometryTopic = "/model/" + odometryTargetName + "/odometry";
 
     // TODO: Extraer llamadas de suscripción a un método.
 
@@ -98,9 +101,8 @@ void SpecificWorker::initialize(int period)
         cout << "SpecificWorker suscribed to [" << ROBOCOMP_IMU << "]" << std::endl;
 
     // If target is specified
-    if(odometryTargetName != "none"){
+    if(odometryTargetName != "none") {
         // Subscribe to odometry topic by registering a callback
-        string completeOdometryTopic = "/model/" + odometryTargetName + "/odometry";
         if (!node.Subscribe(completeOdometryTopic, &SpecificWorker::odometry_cb, this))
             cerr << "Error subscribing to topic [" << completeOdometryTopic << "]" << std::endl;
         else
@@ -139,17 +141,25 @@ void SpecificWorker::odometry_cb(const gz::msgs::Odometry &_msg)
     // En Gazebo el eje Y es el que representa el movimiento lateral.
     newOdometryData.z = _msg.pose().position().y();
 
+    // Valores corregidos
+    newOdometryData.correctedX = ceil(newOdometryData.x * 100.0) / 100.0;
+    newOdometryData.correctedZ = ceil(newOdometryData.z * 100.0) / 100.0;
+
     // Valores de velocidad
     newOdometryData.advVx = _msg.twist().linear().x();
     newOdometryData.advVz = _msg.twist().linear().y();
 
-    // Valores angulares
-    newOdometryData.alpha = _msg.twist().angular().z();
-
     // Se está moviendo si alguna de las velocidades es mayor que 0
     newOdometryData.isMoving = (abs(newOdometryData.advVx)  > .01 || abs(newOdometryData.advVz)  > .01);
 
-    // COMPROBAR --> newOdometryData.rotV = _msg.pose().orientation().z();
+    // Valor de la velocidad de rotación
+    newOdometryData.rotV = _msg.twist().angular().z();
+
+
+    // TODO: Valor de rotación acumulada
+    // Actualmente newOdometryData es la acumulación del valor redondeado de la velocidad de
+    // rotación
+    // newOdometryData.alpha = ?;
 
     odometryTargetState = newOdometryData;
 }
@@ -297,7 +307,7 @@ RoboCompCameraRGBDSimple::TImage SpecificWorker::CameraRGBDSimple_getImage(std::
 
 void SpecificWorker::OmniRobot_correctOdometer(int x, int z, float alpha)
 {
-    // TODO: Implement
+    // TODO: Implement if required
     printNotImplementedWarningMessage("OmniRobot_correctOdometer");
 }
 
@@ -318,9 +328,7 @@ void SpecificWorker::OmniRobot_resetOdometer()
     // Declaration of Gazebo Odometry message
     gz::msgs::Odometry dataMsg;
     // Declaration of Gazebo publisher
-    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Odometry>(ROBOCOMP_IMU);
-
-    // ROBOCOMP_ODOMETRY ??? -> Definir en el topic.h
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Odometry>(completeOdometryTopic);
 
     // Clear odometry data. Maybe not necessary.
     dataMsg.clear_header();
@@ -333,8 +341,24 @@ void SpecificWorker::OmniRobot_resetOdometer()
 
 void SpecificWorker::OmniRobot_setOdometer(RoboCompGenericBase::TBaseState state)
 {
-    // TODO: Implement
-    printNotImplementedWarningMessage("OmniRobot_setOdometer");
+    // Declaration of Gazebo Odometry message
+    gz::msgs::Odometry dataMsg;
+    // Declaration of Gazebo publisher
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Odometry>(completeOdometryTopic);
+
+    // Valores de posición
+    dataMsg.pose().position().x()  = state.correctedX;
+    dataMsg.pose().position().y() = state.correctedZ;
+
+    // Valores de velocidad
+    dataMsg.twist().linear().x() = state.advVx;
+    dataMsg.twist().linear().y() = state.advVz;
+
+    // Valor de la velocidad de rotación
+    dataMsg.twist().angular().z() = state.rotV;
+
+    // Publish to Gazebo with the actual Joystick output.
+    pub.Publish(dataMsg);
 }
 
 void SpecificWorker::OmniRobot_setOdometerPose(int x, int z, float alpha)
