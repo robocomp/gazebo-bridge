@@ -128,7 +128,7 @@ component are the following:
 
 <p>
 For example, if you want to use Gazebo2Robocomp to move a robot using a Joystick,
-you can download this <a href="https://github.com/">Inverted Pendulum</a> Gazebo world and follow the
+you can download this <a href="https://github.com/SergioTrac/GazeboWorld_InvertedPendulum">Inverted Pendulum</a> Gazebo world and follow the
 the following:
 </p>
 
