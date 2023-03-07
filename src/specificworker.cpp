@@ -276,7 +276,10 @@ void SpecificWorker::imu_cb(const gz::msgs::IMU &_msg)
 
     // Magnetic field
     RoboCompIMU::Magnetic newMagneticFields;
-    // TODO: Recoger datos de magnetismo.
+    // TODO: Recoger datos del sensor magnetic
+    //newMagneticFields.XMag = ;
+    //newMagneticFields.YMag = ;
+    //newMagneticFields.ZMag = ;
 
     // IMU Data
     imuDataImu.acc = newAcceleration;
@@ -391,8 +394,8 @@ void SpecificWorker::OmniRobot_setSpeedBase(float advx, float advz, float rot)
     gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Odometry>(completeOdometryTopic);
 
     // Valores de velocidad
-    lastOdometryValue.mutable_twist()->mutable_linear()->set_x(advVx);
-    lastOdometryValue.mutable_twist()->mutable_linear()->set_y(advVz);
+    lastOdometryValue.mutable_twist()->mutable_linear()->set_x(advx);
+    lastOdometryValue.mutable_twist()->mutable_linear()->set_y(advz);
     lastOdometryValue.mutable_twist()->mutable_angular()->set_z(rot);
 
     // Publish to Gazebo with the actual Joystick output.
