@@ -108,7 +108,59 @@ void SpecificWorker::initialize(int period)
         else
             cout << "SpecificWorker suscribed to [" << completeOdometryTopic << "]" << std::endl;
     }
+
+
+    // ##################### PROBANDO CREACION DE ENTIDADES EN RUNTIME #################################
+    gz::msgs::EntityFactory dataMsg;
+
+    auto cylinderStr = R"(<?xml version="1.0" ?>
+    <sdf version='1.6'>
+      <model name='robolab_cylinder'>
+      <pose>0 -1.5 0.5 0 0 0</pose>
+      <link name='cylinder_link'>
+        <visual name='cylinder_visual'>
+          <geometry>
+            <cylinder>
+              <radius>0.5</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0 1 0 1</ambient>
+            <diffuse>0 1 0 1</diffuse>
+            <specular>0 1 0 1</specular>
+          </material>
+        </visual>
+        <pose>0 0 0 0 0 0</pose>
+        <enable_wind>false</enable_wind>
+      </link>
+    </model>
+    </sdf>)";
+    dataMsg.set_sdf(cylinderStr);
+    dataMsg.clear_pose();
+    dataMsg.set_name("new_name");
+    dataMsg.set_allow_renaming(true);
+
+
+    cout << "--------------- DEBUG -----------------" << endl;
+
+    cout << dataMsg.IsInitialized() << endl;
+
+    cout << "--------------------------------" << endl;
+
+    gz::msgs::Boolean reply;
+    bool result;
+    const unsigned int timeout = 300;
+    bool executed = node.Request("/world/basic/create", dataMsg, timeout, reply, result);
+
+    if (executed)
+        cout << "Service executed successfully" << endl;
+    else
+        cerr << "Service call timed out" << endl;
+
 }
+
+
 
 void SpecificWorker::compute()
 {
