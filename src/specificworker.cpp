@@ -121,8 +121,6 @@ void SpecificWorker::compute()
         std::cout << "Distance: " << data.dist << " meters" << std::endl;
     }
      */
-
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -135,6 +133,7 @@ void SpecificWorker::compute()
  */
 void SpecificWorker::odometry_cb(const gz::msgs::Odometry &_msg)
 {
+    lastOdometryValue = _msg;
     RoboCompGenericBase::TBaseState newOdometryData;
     // Valores de posición
     newOdometryData.x = _msg.pose().position().x();
@@ -155,13 +154,13 @@ void SpecificWorker::odometry_cb(const gz::msgs::Odometry &_msg)
     // Valor de la velocidad de rotación
     newOdometryData.rotV = _msg.twist().angular().z();
 
-
     // TODO: Valor de rotación acumulada
     // Actualmente newOdometryData es la acumulación del valor redondeado de la velocidad de
     // rotación
     // newOdometryData.alpha = ?;
 
     odometryTargetState = newOdometryData;
+
 }
 
 /**
@@ -374,20 +373,35 @@ void SpecificWorker::OmniRobot_setOdometer(RoboCompGenericBase::TBaseState state
 
 void SpecificWorker::OmniRobot_setOdometerPose(int x, int z, float alpha)
 {
-    // TODO: Implement
-    printNotImplementedWarningMessage("OmniRobot_setOdometerPose");
+    // Declaration of Gazebo publisher
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Odometry>(completeOdometryTopic);
+
+    // Valores de posición
+    lastOdometryValue.mutable_pose()->mutable_position()->set_x(x);
+    lastOdometryValue.mutable_pose()->mutable_position()->set_y(z);
+    // lastOdometryValue.mutable_??? -> alpha ??;
+
+    // Publish to Gazebo with the actual Joystick output.
+    pub.Publish(lastOdometryValue);
 }
 
 void SpecificWorker::OmniRobot_setSpeedBase(float advx, float advz, float rot)
 {
-    // TODO: Implement
-    printNotImplementedWarningMessage("OmniRobot_setSpeedBase");
+    // Declaration of Gazebo publisher
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Odometry>(completeOdometryTopic);
+
+    // Valores de velocidad
+    lastOdometryValue.mutable_twist()->mutable_linear()->set_x(advVx);
+    lastOdometryValue.mutable_twist()->mutable_linear()->set_y(advVz);
+    lastOdometryValue.mutable_twist()->mutable_angular()->set_z(rot);
+
+    // Publish to Gazebo with the actual Joystick output.
+    pub.Publish(lastOdometryValue);
 }
 
 void SpecificWorker::OmniRobot_stopBase()
 {
-    // TODO: Implement
-    printNotImplementedWarningMessage("OmniRobot_stopBase");
+    OmniRobot_setSpeedBase(0, 0, 0);
 }
 
 #pragma endregion OmniRobot

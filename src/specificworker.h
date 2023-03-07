@@ -53,6 +53,7 @@ class SpecificWorker : public GenericWorker
         RoboCompLaser::TLaserData Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState);
         RoboCompLaser::LaserConfData Laser_getLaserConfData();
         RoboCompLaser::TLaserData Laser_getLaserData();
+
         // OMNIROBOT
         void OmniRobot_correctOdometer(int x, int z, float alpha);
         void OmniRobot_getBasePose(int &x, int &z, float &alpha);
@@ -62,6 +63,7 @@ class SpecificWorker : public GenericWorker
         void OmniRobot_setOdometerPose(int x, int z, float alpha);
         void OmniRobot_setSpeedBase(float advx, float advz, float rot);
         void OmniRobot_stopBase();
+
         // IMU
         RoboCompIMU::Acceleration IMU_getAcceleration();
         RoboCompIMU::Gyroscope IMU_getAngularVel();
@@ -69,6 +71,7 @@ class SpecificWorker : public GenericWorker
         RoboCompIMU::Magnetic IMU_getMagneticFields();
         RoboCompIMU::Orientation IMU_getOrientation();
         void IMU_resetImu();
+
         // JOINTMOTORSIMPLE
         RoboCompJointMotorSimple::MotorParams JointMotorSimple_getMotorParams(std::string motor);
         RoboCompJointMotorSimple::MotorState JointMotorSimple_getMotorState(std::string motor);
@@ -106,6 +109,7 @@ class SpecificWorker : public GenericWorker
         // Odometer
         RoboCompGenericBase::TBaseState odometryTargetState;
         string completeOdometryTopic;
+        gz::msgs::Odometry lastOdometryValue;
 
         // Imu
         RoboCompIMU::Acceleration imuAcceleration;
@@ -121,11 +125,9 @@ class SpecificWorker : public GenericWorker
         void odometry_cb(const gz::msgs::Odometry &_msg);
         void imu_cb(const gz::msgs::IMU &_msg);
 
+
         // Auxiliar functions
         void printNotImplementedWarningMessage(string functionName);
-
-
-
 };
 
 #endif
