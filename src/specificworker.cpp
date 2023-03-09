@@ -172,8 +172,23 @@ void SpecificWorker::initialize(int period)
         cerr << "Service call timed out" << endl;
     */
 
+    /*
     // ##################### PROBANDO MOVER ENTIDADES EN RUNTIME #################################
-    
+    gz::msgs::Pose pose;
+    gz::msgs::Boolean reply;
+    bool result;
+    const unsigned int timeout = 300;
+
+    pose.set_name("new_name");
+    pose.mutable_position()->set_x(20);
+
+    bool executed = node.Request("/world/basic/set_pose", pose, timeout, reply, result);
+
+    if (executed)
+        cout << "Service executed successfully" << endl;
+    else
+        cerr << "Service call timed out" << endl;
+    */
 
 }
 
