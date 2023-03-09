@@ -109,11 +109,12 @@ void SpecificWorker::initialize(int period)
             cout << "SpecificWorker suscribed to [" << completeOdometryTopic << "]" << std::endl;
     }
 
-
+    /*
     // ##################### PROBANDO CREACION DE ENTIDADES EN RUNTIME #################################
     gz::msgs::EntityFactory dataMsg;
 
-    auto cylinderStr = R"(<?xml version="1.0" ?>
+    auto cylinderStr = R"(
+    <?xml version="1.0" ?>
     <sdf version='1.6'>
       <model name='robolab_cylinder'>
       <pose>0 -1.5 0.5 0 0 0</pose>
@@ -135,18 +136,12 @@ void SpecificWorker::initialize(int period)
         <enable_wind>false</enable_wind>
       </link>
     </model>
-    </sdf>)";
+    </sdf>
+    )";
     dataMsg.set_sdf(cylinderStr);
     dataMsg.clear_pose();
     dataMsg.set_name("new_name");
     dataMsg.set_allow_renaming(true);
-
-
-    cout << "--------------- DEBUG -----------------" << endl;
-
-    cout << dataMsg.IsInitialized() << endl;
-
-    cout << "--------------------------------" << endl;
 
     gz::msgs::Boolean reply;
     bool result;
@@ -157,6 +152,28 @@ void SpecificWorker::initialize(int period)
         cout << "Service executed successfully" << endl;
     else
         cerr << "Service call timed out" << endl;
+    */
+
+    /*
+    // ##################### PROBANDO BORRADO DE ENTIDADES EN RUNTIME #################################
+    gz::msgs::Entity entity;
+    gz::msgs::Boolean reply;
+    bool result;
+    const unsigned int timeout = 300;
+
+    entity.set_name("new_name");
+    entity.set_type(gz::msgs::Entity_Type::Entity_Type_MODEL);
+
+    bool executed = node.Request("/world/basic/remove", entity, timeout, reply, result);
+
+    if (executed)
+        cout << "Service executed successfully" << endl;
+    else
+        cerr << "Service call timed out" << endl;
+    */
+
+    // ##################### PROBANDO MOVER ENTIDADES EN RUNTIME #################################
+    
 
 }
 
