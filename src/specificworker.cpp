@@ -583,7 +583,51 @@ void SpecificWorker::JointMotorSimple_setZeroPos(std::string name)
 
 #pragma endregion JointMotorSimple
 
+#pragma region Gazebo2Robocomp_Interfaces
 
+void SpecificWorker::Gazebo2Robocomp_createBoxEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float size)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::Gazebo2Robocomp_createCapsuleEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::Gazebo2Robocomp_createCylinderEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::Gazebo2Robocomp_createEntity(std::string sdf)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::Gazebo2Robocomp_createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::Gazebo2Robocomp_removeEntity(std::string name)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::Gazebo2Robocomp_setEntityPose(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation)
+{
+//implementCODE
+
+}
+
+#pragma endregion Gazebo2Robocomp_Interfaces
 
 /**
  * @brief Subscription callback for the sendData method of the JoystickAdapter interface.

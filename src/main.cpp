@@ -82,6 +82,7 @@
 #include "commonbehaviorI.h"
 
 #include <camerargbdsimpleI.h>
+#include <gazebo2robocompI.h>
 #include <imuI.h>
 #include <jointmotorsimpleI.h>
 #include <laserI.h>
@@ -211,6 +212,24 @@ int ::Gazebo2Robocomp::run(int argc, char* argv[])
 		}
 		catch (const IceStorm::TopicExists&){
 			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for CameraRGBDSimple\n";
+		}
+
+
+		try
+		{
+			// Server adapter creation and publication
+			if (not GenericMonitor::configGetString(communicator(), prefix, "Gazebo2Robocomp.Endpoints", tmp, ""))
+			{
+				cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy Gazebo2Robocomp";
+			}
+			Ice::ObjectAdapterPtr adapterGazebo2Robocomp = communicator()->createObjectAdapterWithEndpoints("Gazebo2Robocomp", tmp);
+			auto gazebo2robocomp = std::make_shared<Gazebo2RobocompI>(worker);
+			adapterGazebo2Robocomp->add(gazebo2robocomp, Ice::stringToIdentity("gazebo2robocomp"));
+			adapterGazebo2Robocomp->activate();
+			cout << "[" << PROGRAM_NAME << "]: Gazebo2Robocomp adapter created in port " << tmp << endl;
+		}
+		catch (const IceStorm::TopicExists&){
+			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for Gazebo2Robocomp\n";
 		}
 
 
