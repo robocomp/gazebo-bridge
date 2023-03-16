@@ -109,7 +109,7 @@ void SpecificWorker::initialize(int period)
             cout << "SpecificWorker suscribed to [" << completeOdometryTopic << "]" << std::endl;
     }
 
-    /*
+
     // ##################### PROBANDO CREACION DE ENTIDADES EN RUNTIME #################################
     gz::msgs::EntityFactory dataMsg;
 
@@ -138,9 +138,10 @@ void SpecificWorker::initialize(int period)
     </model>
     </sdf>
     )";
+
     dataMsg.set_sdf(cylinderStr);
-    dataMsg.clear_pose();
-    dataMsg.set_name("new_name");
+    //dataMsg.clear_pose();
+    //dataMsg.set_name("new_name");
     dataMsg.set_allow_renaming(true);
 
     gz::msgs::Boolean reply;
@@ -152,7 +153,7 @@ void SpecificWorker::initialize(int period)
         cout << "Service executed successfully" << endl;
     else
         cerr << "Service call timed out" << endl;
-    */
+
 
     /*
     // ##################### PROBANDO BORRADO DE ENTIDADES EN RUNTIME #################################
@@ -587,32 +588,133 @@ void SpecificWorker::JointMotorSimple_setZeroPos(std::string name)
 
 void SpecificWorker::Gazebo2Robocomp_createBoxEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float size)
 {
-//implementCODE
+    string boxEntity =
+    "<?xml version='1.0' ?>"
+    "<sdf version='1.6'>"
+    "<model name='" + name + "'>"
+    "<pose>" + std::to_string(position.x) + " " + std::to_string(position.y) + " " + std::to_string(position.z) + " " +
+            std::to_string(orientation.x) + " " + std::to_string(orientation.y) + " " + std::to_string(orientation.z) + "</pose>"
+    "<link name='cylinder_link'>"
+    "<visual name='cylinder_visual'>"
+    "<geometry>"
+    "<box>"
+    "<size>" + std::to_string(static_cast<int>(size)) + " " + std::to_string(static_cast<int>(size)) + " " + std::to_string(static_cast<int>(size)) + "</size>"
+    "</box>"
+    "</geometry>"
+    "<material>"
+    "<ambient>0 1 0 1</ambient>"
+    "<diffuse>0 1 0 1</diffuse>"
+    "<specular>0 1 0 1</specular>"
+    "</material>"
+    "</visual>"
+    "</link>"
+    "</model>"
+    "</sdf>";
 
+    SpecificWorker::Gazebo2Robocomp_createEntity(boxEntity);
 }
 
 void SpecificWorker::Gazebo2Robocomp_createCapsuleEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius)
 {
-//implementCODE
+    string capsuleEntity =
+    "<?xml version='1.0' ?>"
+    "<sdf version='1.6'>"
+    "<model name='" + name + "'>"
+    "<pose>" + std::to_string(position.x) + " " + std::to_string(position.y) + " " + std::to_string(position.z) + " " +
+    std::to_string(orientation.x) + " " + std::to_string(orientation.y) + " " + std::to_string(orientation.z) + "</pose>"
+    "<link name='cylinder_link'>"
+    "<visual name='cylinder_visual'>"
+    "<geometry>"
+    "<capsule>"
+    "<radius>" + std::to_string(radius) + "</radius>"
+    "<length>" + std::to_string(length) + "</length>"
+    "</capsule>"
+    "</geometry>"
+    "<material>"
+    "<ambient>0 1 0 1</ambient>"
+    "<diffuse>0 1 0 1</diffuse>"
+    "<specular>0 1 0 1</specular>"
+    "</material>"
+    "</visual>"
+    "</link>"
+    "</model>"
+    "</sdf>";
 
+    SpecificWorker::Gazebo2Robocomp_createEntity(capsuleEntity);
 }
 
 void SpecificWorker::Gazebo2Robocomp_createCylinderEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius)
 {
-//implementCODE
+    string cylinderEntity =
+    "<?xml version='1.0' ?>"
+    "<sdf version='1.6'>"
+    "<model name='" + name + "'>"
+    "<pose>" + std::to_string(position.x) + " " + std::to_string(position.y) + " " + std::to_string(position.z) + " " +
+    std::to_string(orientation.x) + " " + std::to_string(orientation.y) + " " + std::to_string(orientation.z) + "</pose>"
+    "<link name='cylinder_link'>"
+    "<visual name='cylinder_visual'>"
+    "<geometry>"
+    "<capsule>"
+    "<radius>" + std::to_string(radius) + "</radius>"
+    "<length>" + std::to_string(length) + "</length>"
+    "</capsule>"
+    "</geometry>"
+    "<material>"
+    "<ambient>0 1 0 1</ambient>"
+    "<diffuse>0 1 0 1</diffuse>"
+    "<specular>0 1 0 1</specular>"
+    "</material>"
+    "</visual>"
+    "</link>"
+    "</model>"
+    "</sdf>";
 
+    SpecificWorker::Gazebo2Robocomp_createEntity(cylinderEntity);
 }
 
 void SpecificWorker::Gazebo2Robocomp_createEntity(std::string sdf)
 {
-//implementCODE
+    gz::msgs::EntityFactory dataMsg;
+    dataMsg.set_sdf(sdf);
+    dataMsg.set_allow_renaming(true);
 
+    gz::msgs::Boolean reply;
+    bool result;
+    const unsigned int timeout = 300;
+    bool executed = node.Request("/world/basic/create", dataMsg, timeout, reply, result);
+
+    if (executed)
+        cout << "Service executed successfully" << endl;
+    else
+        cerr << "Service call timed out" << endl;
 }
 
 void SpecificWorker::Gazebo2Robocomp_createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius)
 {
-//implementCODE
+    string sphereEntity =
+    "<?xml version='1.0' ?>"
+    "<sdf version='1.6'>"
+    "<model name='" + name + "'>"
+    "<pose>" + std::to_string(position.x) + " " + std::to_string(position.y) + " " + std::to_string(position.z) + " " +
+    std::to_string(orientation.x) + " " + std::to_string(orientation.y) + " " + std::to_string(orientation.z) + "</pose>"
+    "<link name='cylinder_link'>"
+    "<visual name='cylinder_visual'>"
+    "<geometry>"
+    "<sphere>"
+    "<radius>" + std::to_string(radius) + "</radius>"
+    "</sphere>"
+    "</geometry>"
+    "<material>"
+    "<ambient>0 1 0 1</ambient>"
+    "<diffuse>0 1 0 1</diffuse>"
+    "<specular>0 1 0 1</specular>"
+    "</material>"
+    "</visual>"
+    "</link>"
+    "</model>"
+    "</sdf>";
 
+    SpecificWorker::Gazebo2Robocomp_createEntity(sphereEntity);
 }
 
 void SpecificWorker::Gazebo2Robocomp_removeEntity(std::string name)

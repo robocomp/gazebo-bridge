@@ -6,6 +6,8 @@ Laser.Endpoints=tcp -p 10003
 IMU.Endpoints=tcp -p 10005
 JointMotorSimple.Endpoints=tcp -p 10006
 OmniRobot.Endpoints=tcp -p 10004
+Gazebo2Robocomp.Endpoints=tcp -p 10007
+
 
 
 # Endpoints for subscriptions interfaces
