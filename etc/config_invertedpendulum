@@ -21,6 +21,7 @@ InnerModelPath = innermodel.xml
 
 # Custom parameters
 odometry_target_name = simple_robot
+gazebo_world_name = basic
 
 Ice.Warn.Connections=0
 Ice.Trace.Network=0

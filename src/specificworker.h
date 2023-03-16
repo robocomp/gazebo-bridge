@@ -103,6 +103,7 @@ class SpecificWorker : public GenericWorker
 
         // Components parameters
         std::string odometryTargetName;
+        std::string gazeboWorldName;
 
         // Camera RGBD simple
         RoboCompCameraRGBDSimple::TDepth depthImage;

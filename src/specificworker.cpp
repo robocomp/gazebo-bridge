@@ -48,6 +48,7 @@ SpecificWorker::~SpecificWorker()
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 {
     odometryTargetName = params["odometry_target_name"].value;
+    gazeboWorldName = params["gazebo_world_name"].value;
 
 	return true;
 }
@@ -108,89 +109,6 @@ void SpecificWorker::initialize(int period)
         else
             cout << "SpecificWorker suscribed to [" << completeOdometryTopic << "]" << std::endl;
     }
-
-
-    // ##################### PROBANDO CREACION DE ENTIDADES EN RUNTIME #################################
-    gz::msgs::EntityFactory dataMsg;
-
-    auto cylinderStr = R"(
-    <?xml version="1.0" ?>
-    <sdf version='1.6'>
-      <model name='robolab_cylinder'>
-      <pose>0 -1.5 0.5 0 0 0</pose>
-      <link name='cylinder_link'>
-        <visual name='cylinder_visual'>
-          <geometry>
-            <cylinder>
-              <radius>0.5</radius>
-              <length>1</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <ambient>0 1 0 1</ambient>
-            <diffuse>0 1 0 1</diffuse>
-            <specular>0 1 0 1</specular>
-          </material>
-        </visual>
-        <pose>0 0 0 0 0 0</pose>
-        <enable_wind>false</enable_wind>
-      </link>
-    </model>
-    </sdf>
-    )";
-
-    dataMsg.set_sdf(cylinderStr);
-    //dataMsg.clear_pose();
-    //dataMsg.set_name("new_name");
-    dataMsg.set_allow_renaming(true);
-
-    gz::msgs::Boolean reply;
-    bool result;
-    const unsigned int timeout = 300;
-    bool executed = node.Request("/world/basic/create", dataMsg, timeout, reply, result);
-
-    if (executed)
-        cout << "Service executed successfully" << endl;
-    else
-        cerr << "Service call timed out" << endl;
-
-
-    /*
-    // ##################### PROBANDO BORRADO DE ENTIDADES EN RUNTIME #################################
-    gz::msgs::Entity entity;
-    gz::msgs::Boolean reply;
-    bool result;
-    const unsigned int timeout = 300;
-
-    entity.set_name("new_name");
-    entity.set_type(gz::msgs::Entity_Type::Entity_Type_MODEL);
-
-    bool executed = node.Request("/world/basic/remove", entity, timeout, reply, result);
-
-    if (executed)
-        cout << "Service executed successfully" << endl;
-    else
-        cerr << "Service call timed out" << endl;
-    */
-
-    /*
-    // ##################### PROBANDO MOVER ENTIDADES EN RUNTIME #################################
-    gz::msgs::Pose pose;
-    gz::msgs::Boolean reply;
-    bool result;
-    const unsigned int timeout = 300;
-
-    pose.set_name("new_name");
-    pose.mutable_position()->set_x(20);
-
-    bool executed = node.Request("/world/basic/set_pose", pose, timeout, reply, result);
-
-    if (executed)
-        cout << "Service executed successfully" << endl;
-    else
-        cerr << "Service call timed out" << endl;
-    */
-
 }
 
 
@@ -206,8 +124,6 @@ void SpecificWorker::compute()
         std::cout << "Distance: " << data.dist << " meters" << std::endl;
     }
      */
-
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -672,23 +588,6 @@ void SpecificWorker::Gazebo2Robocomp_createCylinderEntity(std::string name, Robo
     SpecificWorker::Gazebo2Robocomp_createEntity(cylinderEntity);
 }
 
-void SpecificWorker::Gazebo2Robocomp_createEntity(std::string sdf)
-{
-    gz::msgs::EntityFactory dataMsg;
-    dataMsg.set_sdf(sdf);
-    dataMsg.set_allow_renaming(true);
-
-    gz::msgs::Boolean reply;
-    bool result;
-    const unsigned int timeout = 300;
-    bool executed = node.Request("/world/basic/create", dataMsg, timeout, reply, result);
-
-    if (executed)
-        cout << "Service executed successfully" << endl;
-    else
-        cerr << "Service call timed out" << endl;
-}
-
 void SpecificWorker::Gazebo2Robocomp_createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius)
 {
     string sphereEntity =
@@ -717,16 +616,80 @@ void SpecificWorker::Gazebo2Robocomp_createSphereEntity(std::string name, RoboCo
     SpecificWorker::Gazebo2Robocomp_createEntity(sphereEntity);
 }
 
+void SpecificWorker::Gazebo2Robocomp_createEntity(std::string sdf)
+{
+    // Creating Entity Factory
+    gz::msgs::EntityFactory dataMsg;
+
+    // Setting the final .sdf to the factory
+    dataMsg.set_sdf(sdf);
+
+    // Permit renaming to the object, if not, Gazebo doesnt permit duplicities.
+    dataMsg.set_allow_renaming(true);
+
+    gz::msgs::Boolean reply;
+    bool result;
+    const unsigned int timeout = 300;
+
+    // Request of the Gazebo service
+    bool executed = node.Request("/world/"+ gazeboWorldName +"/create", dataMsg, timeout, reply, result);
+
+    if (executed)
+        cout << "[Create] Service executed successfully" << endl;
+    else
+        cerr << "[Create] Service call timed out" << endl;
+}
+
 void SpecificWorker::Gazebo2Robocomp_removeEntity(std::string name)
 {
-//implementCODE
+    gz::msgs::Entity entity;
+    gz::msgs::Boolean reply;
+    bool result;
+    const unsigned int timeout = 300;
 
+    // Setting the name for the object to remove
+    entity.set_name(name);
+
+    // Setting type of entity.
+    entity.set_type(gz::msgs::Entity_Type::Entity_Type_MODEL);
+
+    // Request of the Gazebo service
+    bool executed = node.Request("/world/"+ gazeboWorldName +"/remove", entity, timeout, reply, result);
+
+    if (executed)
+        cout << "[Remove] Service executed successfully" << endl;
+    else
+        cerr << "[Remove] Service call timed out" << endl;
 }
 
 void SpecificWorker::Gazebo2Robocomp_setEntityPose(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation)
 {
-//implementCODE
+    gz::msgs::Pose pose;
+    gz::msgs::Boolean reply;
+    bool result;
+    const unsigned int timeout = 300;
 
+    // Setting the name of the object to move
+    pose.set_name(name);
+
+    // Setting the new position to the object
+    pose.mutable_position()->set_x(position.x);
+    pose.mutable_position()->set_y(position.y);
+    pose.mutable_position()->set_z(position.z);
+
+    // Setting the new orientation to the object
+    pose.mutable_orientation()->set_x(orientation.x);
+    pose.mutable_orientation()->set_y(orientation.y);
+    pose.mutable_orientation()->set_z(orientation.z);
+    pose.mutable_orientation()->set_w(orientation.w);
+
+    // Request of the Gazebo service
+    bool executed = node.Request("/world/" + gazeboWorldName + "/set_pose", pose, timeout, reply, result);
+
+    if (executed)
+        cout << "[Set_Pose] Service executed successfully" << endl;
+    else
+        cerr << "[Set_Pose] Service call timed out" << endl;
 }
 
 #pragma endregion Gazebo2Robocomp_Interfaces
