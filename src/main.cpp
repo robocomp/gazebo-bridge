@@ -82,6 +82,7 @@
 #include "commonbehaviorI.h"
 
 #include <camerargbdsimpleI.h>
+#include <differentialrobotI.h>
 #include <imuI.h>
 #include <jointmotorsimpleI.h>
 #include <laserI.h>
@@ -211,6 +212,24 @@ int ::Gazebo2Robocomp::run(int argc, char* argv[])
 		}
 		catch (const IceStorm::TopicExists&){
 			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for CameraRGBDSimple\n";
+		}
+
+
+		try
+		{
+			// Server adapter creation and publication
+			if (not GenericMonitor::configGetString(communicator(), prefix, "DifferentialRobot.Endpoints", tmp, ""))
+			{
+				cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy DifferentialRobot";
+			}
+			Ice::ObjectAdapterPtr adapterDifferentialRobot = communicator()->createObjectAdapterWithEndpoints("DifferentialRobot", tmp);
+			auto differentialrobot = std::make_shared<DifferentialRobotI>(worker);
+			adapterDifferentialRobot->add(differentialrobot, Ice::stringToIdentity("differentialrobot"));
+			adapterDifferentialRobot->activate();
+			cout << "[" << PROGRAM_NAME << "]: DifferentialRobot adapter created in port " << tmp << endl;
+		}
+		catch (const IceStorm::TopicExists&){
+			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for DifferentialRobot\n";
 		}
 
 

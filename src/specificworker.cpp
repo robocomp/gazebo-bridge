@@ -1,5 +1,5 @@
 /*
- *    Copyright (C) 2022 by YOUR NAME HERE
+ *    Copyright (C) 2023 by YOUR NAME HERE
  *
  *    This file is part of RoboComp
  *
@@ -108,6 +108,8 @@ void SpecificWorker::initialize(int period)
         else
             cout << "SpecificWorker suscribed to [" << completeOdometryTopic << "]" << std::endl;
     }
+    // TO DO: Topic del DifferentialRobot
+    // TO DO: Topic del OmniRobot
 }
 
 void SpecificWorker::compute()
@@ -160,7 +162,6 @@ void SpecificWorker::odometry_cb(const gz::msgs::Odometry &_msg)
     // newOdometryData.alpha = ?;
 
     odometryTargetState = newOdometryData;
-
 }
 
 /**
@@ -287,6 +288,7 @@ void SpecificWorker::imu_cb(const gz::msgs::IMU &_msg)
     imuDataImu.rot = newOrientation;
     imuDataImu.mag = newMagneticFields;
 }
+
 
 #pragma endregion Gazebo_CallbackFunctions
 
@@ -516,6 +518,52 @@ void SpecificWorker::JointMotorSimple_setZeroPos(std::string name)
 
 #pragma endregion JointMotorSimple
 
+#pragma region DifferentialRobot
+
+void SpecificWorker::DifferentialRobot_correctOdometer(int x, int z, float alpha)
+{
+    OmniRobot_correctOdometer(x, z, alpha);
+
+}
+
+void SpecificWorker::DifferentialRobot_getBasePose(int &x, int &z, float &alpha)
+{
+    OmniRobot_getBasePose(x, z, alpha);
+
+}
+
+void SpecificWorker::DifferentialRobot_getBaseState(RoboCompGenericBase::TBaseState &state)
+{
+    OmniRobot_getBaseState(state);
+}
+
+void SpecificWorker::DifferentialRobot_resetOdometer()
+{
+    OmniRobot_resetOdometer();
+}
+
+void SpecificWorker::DifferentialRobot_setOdometer(RoboCompGenericBase::TBaseState state)
+{
+    OmniRobot_setOdometer(state);
+}
+
+void SpecificWorker::DifferentialRobot_setOdometerPose(int x, int z, float alpha)
+{
+    OmniRobot_setOdometerPose(x, z, alpha);
+}
+
+void SpecificWorker::DifferentialRobot_setSpeedBase(float adv, float rot)
+{
+    OmniRobot_setSpeedBase(adv, 0, rot);
+}
+
+void SpecificWorker::DifferentialRobot_stopBase()
+{
+    OmniRobot_setSpeedBase(0, 0, 0);
+}
+
+#pragma endregion DifferentialRobot
+
 
 
 /**
@@ -592,5 +640,9 @@ void SpecificWorker::printNotImplementedWarningMessage(string functionName)
 // From the RoboCompLaser you can use this types:
 // RoboCompLaser::LaserConfData
 // RoboCompLaser::TData
+
+/***************************************/
+// From the RoboCompDifferentialRobot you can use this types:
+// RoboCompDifferentialRobot::TMechParams
 
 

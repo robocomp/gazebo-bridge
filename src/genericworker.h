@@ -25,6 +25,7 @@
 #include <CommonBehavior.h>
 
 #include <CameraRGBDSimple.h>
+#include <DifferentialRobot.h>
 #include <GenericBase.h>
 #include <IMU.h>
 #include <JointMotorSimple.h>
@@ -58,6 +59,14 @@ public:
 	virtual RoboCompCameraRGBDSimple::TDepth CameraRGBDSimple_getDepth(std::string camera) = 0;
 	virtual RoboCompCameraRGBDSimple::TImage CameraRGBDSimple_getImage(std::string camera) = 0;
 	virtual RoboCompCameraRGBDSimple::TPoints CameraRGBDSimple_getPoints(std::string camera) = 0;
+	virtual void DifferentialRobot_correctOdometer(int x, int z, float alpha) = 0;
+	virtual void DifferentialRobot_getBasePose(int &x, int &z, float &alpha) = 0;
+	virtual void DifferentialRobot_getBaseState(RoboCompGenericBase::TBaseState &state) = 0;
+	virtual void DifferentialRobot_resetOdometer() = 0;
+	virtual void DifferentialRobot_setOdometer(RoboCompGenericBase::TBaseState state) = 0;
+	virtual void DifferentialRobot_setOdometerPose(int x, int z, float alpha) = 0;
+	virtual void DifferentialRobot_setSpeedBase(float adv, float rot) = 0;
+	virtual void DifferentialRobot_stopBase() = 0;
 	virtual RoboCompIMU::Acceleration IMU_getAcceleration() = 0;
 	virtual RoboCompIMU::Gyroscope IMU_getAngularVel() = 0;
 	virtual RoboCompIMU::DataImu IMU_getDataImu() = 0;

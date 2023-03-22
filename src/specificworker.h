@@ -1,5 +1,5 @@
 /*
- *    Copyright (C) 2022 by YOUR NAME HERE
+ *    Copyright (C) 2023 by YOUR NAME HERE
  *
  *    This file is part of RoboComp
  *
@@ -63,6 +63,16 @@ class SpecificWorker : public GenericWorker
         void OmniRobot_setOdometerPose(int x, int z, float alpha);
         void OmniRobot_setSpeedBase(float advx, float advz, float rot);
         void OmniRobot_stopBase();
+
+	    // DIFFERENTIALROBOT
+	    void DifferentialRobot_correctOdometer(int x, int z, float alpha);
+    	void DifferentialRobot_getBasePose(int &x, int &z, float &alpha);
+	    void DifferentialRobot_getBaseState(RoboCompGenericBase::TBaseState &state);
+	    void DifferentialRobot_resetOdometer();
+	    void DifferentialRobot_setOdometer(RoboCompGenericBase::TBaseState state);
+	    void DifferentialRobot_setOdometerPose(int x, int z, float alpha);
+	    void DifferentialRobot_setSpeedBase(float adv, float rot);
+	    void DifferentialRobot_stopBase();
 
         // IMU
         RoboCompIMU::Acceleration IMU_getAcceleration();
