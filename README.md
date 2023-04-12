@@ -59,27 +59,28 @@ for been used with your own parameter values. </p>
 <p> Actually, a config file for this component looks like this: </p>
 
     CommonBehavior.Endpoints=tcp -p 10217
-    
+
     # Endpoints for implements interfaces
     CameraRGBDSimple.Endpoints=tcp -p 10096
     Laser.Endpoints=tcp -p 10003
+    OmniRobot.Endpoints=tcp -p 10004
     IMU.Endpoints=tcp -p 10005
     JointMotorSimple.Endpoints=tcp -p 10006
-    OmniRobot.Endpoints=tcp -p 10004
-    
-    
+    DifferentialRobot.Endpoints=tcp -p 10007
+
+
     # Endpoints for subscriptions interfaces
     JoystickAdapterTopic.Endpoints=tcp -p 11025
-    
-    
+
+
     # This property is used by the clients to connect to IceStorm.
     TopicManager.Proxy=IceStorm/TopicManager:default -p 9999
     
     InnerModelPath = innermodel.xml
-    
+
     # Custom parameters
     odometry_target_name = simple_robot
-    
+
     Ice.Warn.Connections=0
     Ice.Trace.Network=0
     Ice.Trace.Protocol=0
@@ -114,14 +115,16 @@ system of topics using gz-transport, the topics linked to each supported
 component are the following:
 </p>
 
-| Robocomp Component | Gazebo sensor or plugin |         Topic |
-|--------------------|:-----------------------:|--------------:|
-| CameraRGBDSimple   |         camera          |       /camera |
-| CameraRGBDSimple   |      depth_camera       | /depth_camera |
-| Laser              |        gpu_lidar        |        /lidar |
-| IMU                |           imu           |          /imu |
-| JointMotorSimple   |        DiffDrive         |      /cmd_vel |
-| JoystickAdapter    |        DiffDrive         |      /cmd_vel |
+| Robocomp Component |   Gazebo sensor or plugin |               Topic               |
+|--------------------|:-------------------------:|----------------------------------:|
+| CameraRGBDSimple   |           camera          |                           /camera |
+| CameraRGBDSimple   |        depth_camera       |                     /depth_camera |
+| Laser              |          gpu_lidar        |                            /lidar |
+| IMU                |             imu           |                              /imu |
+| JointMotorSimple   |          DiffDrive        |                          /cmd_vel |
+| JoystickAdapter    |          DiffDrive        |                          /cmd_vel |
+| OmniRobot          |       model/odometer      |/model/" + targetName + "/odometry |
+| DifferentialRobot  |model/odometer && DiffDrive|/model/" + targetName + "/odometry |
 
 
 ## Example Usage
