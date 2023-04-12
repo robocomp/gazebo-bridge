@@ -124,7 +124,7 @@ component are the following:
 | JointMotorSimple   |          DiffDrive        |                          /cmd_vel |
 | JoystickAdapter    |          DiffDrive        |                          /cmd_vel |
 | OmniRobot          |       model/odometer      |/model/" + targetName + "/odometry |
-| DifferentialRobot  |model/odometer && DiffDrive|/model/" + targetName + "/odometry |
+| DifferentialRobot  |       model/odometer      |/model/" + targetName + "/odometry |
 
 
 ## Example Usage
