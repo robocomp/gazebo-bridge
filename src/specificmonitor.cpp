@@ -88,10 +88,12 @@ void SpecificMonitor::readConfig(RoboCompCommonBehavior::ParameterList &params )
 {
     RoboCompCommonBehavior::Parameter aux;
     aux.editable = false;
+
     configGetString( "","odometry_target_name", aux.value, "none");
     params["odometry_target_name"] = aux;
 
-
+    configGetString( "","gazebo_world_name", aux.value, "none");
+    params["gazebo_world_name"] = aux;
 }
 
 //Check parameters and transform them to worker structure

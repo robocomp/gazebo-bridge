@@ -7,6 +7,8 @@ IMU.Endpoints=tcp -p 10005
 JointMotorSimple.Endpoints=tcp -p 10006
 OmniRobot.Endpoints=tcp -p 10004
 DifferentialRobot.Endpoints=tcp -p 0
+Gazebo2Robocomp.Endpoints=tcp -p 10007
+
 
 
 # Endpoints for subscriptions interfaces
@@ -20,6 +22,7 @@ InnerModelPath = innermodel.xml
 
 # Custom parameters
 odometry_target_name = shadow
+gazebo_world_name = empty
 
 Ice.Warn.Connections=0
 Ice.Trace.Network=0

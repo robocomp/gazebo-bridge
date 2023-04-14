@@ -5,12 +5,13 @@ import "Laser.idsl";
 import "IMU.idsl";
 import "JointMotorSimple.idsl";
 import "DifferentialRobot.idsl";
+import "Gazebo2Robocomp.idsl";
 
 Component Gazebo2Robocomp
 {
     Communications
     {
-        implements CameraRGBDSimple, OmniRobot, Laser, IMU, JointMotorSimple, DifferentialRobot;
+        implements CameraRGBDSimple, OmniRobot, Laser, IMU, JointMotorSimple, DifferentialRobot, Gazebo2Robocomp;
         subscribesTo JoystickAdapter;
     };
     language Cpp11;

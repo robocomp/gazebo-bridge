@@ -26,6 +26,7 @@
 
 #include <CameraRGBDSimple.h>
 #include <DifferentialRobot.h>
+#include <Gazebo2Robocomp.h>
 #include <GenericBase.h>
 #include <IMU.h>
 #include <JointMotorSimple.h>
@@ -67,6 +68,13 @@ public:
 	virtual void DifferentialRobot_setOdometerPose(int x, int z, float alpha) = 0;
 	virtual void DifferentialRobot_setSpeedBase(float adv, float rot) = 0;
 	virtual void DifferentialRobot_stopBase() = 0;
+	virtual void Gazebo2Robocomp_createBoxEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float size) = 0;
+	virtual void Gazebo2Robocomp_createCapsuleEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius) = 0;
+	virtual void Gazebo2Robocomp_createCylinderEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius) = 0;
+	virtual void Gazebo2Robocomp_createEntity(std::string sdf) = 0;
+	virtual void Gazebo2Robocomp_createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius) = 0;
+	virtual void Gazebo2Robocomp_removeEntity(std::string name) = 0;
+	virtual void Gazebo2Robocomp_setEntityPose(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation) = 0;
 	virtual RoboCompIMU::Acceleration IMU_getAcceleration() = 0;
 	virtual RoboCompIMU::Gyroscope IMU_getAngularVel() = 0;
 	virtual RoboCompIMU::DataImu IMU_getDataImu() = 0;
