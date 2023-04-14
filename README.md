@@ -67,6 +67,7 @@ for been used with your own parameter values. </p>
     IMU.Endpoints=tcp -p 10005
     JointMotorSimple.Endpoints=tcp -p 10006
     DifferentialRobot.Endpoints=tcp -p 10007
+    Gazebo2Robocomp.Endpoints=tcp -p 10008
 
 
     # Endpoints for subscriptions interfaces
@@ -80,6 +81,7 @@ for been used with your own parameter values. </p>
 
     # Custom parameters
     odometry_target_name = simple_robot
+    gazebo_world_name = empty
 
     Ice.Warn.Connections=0
     Ice.Trace.Network=0
@@ -92,15 +94,18 @@ comes through the custom parameters.
 
     # Custom parameters
     odometry_target_name = simple_robot
+    gazebo_world_name = empty
 
-<p> This parameter determines the model in the Gazebo simulation on which 
+<p> The <strong>'odometry_target_name'</strong> parameter determines the model in the Gazebo simulation on which 
 the component will record the odometry data.
 If your object on which you want to record it has the name 
 of "robot_model" or "car1" or any other name you need to specify it
 in the odometry_target_name parameter.
-</p>
 
-<p> The recommendation is that when you start working with the component 
+On the other hand, the <strong>'gazebo_world_name'</strong> parameter determines the Gazebo world over 
+which Gazebo2Robocomp has scope of action.
+
+The recommendation is that when you start working with the component 
 you create your own config file where you can make the changes you need.
 </p>
 
@@ -115,16 +120,16 @@ system of topics using gz-transport, the topics linked to each supported
 component are the following:
 </p>
 
-| Robocomp Component |   Gazebo sensor or plugin |               Topic               |
-|--------------------|:-------------------------:|----------------------------------:|
-| CameraRGBDSimple   |           camera          |                           /camera |
-| CameraRGBDSimple   |        depth_camera       |                     /depth_camera |
-| Laser              |          gpu_lidar        |                            /lidar |
-| IMU                |             imu           |                              /imu |
-| JointMotorSimple   |          DiffDrive        |                          /cmd_vel |
-| JoystickAdapter    |          DiffDrive        |                          /cmd_vel |
-| OmniRobot          |       model/odometer      |/model/" + targetName + "/odometry |
-| DifferentialRobot  |       model/odometer      |/model/" + targetName + "/odometry |
+| Robocomp Component |   Gazebo sensor or plugin |                                       Topic |
+|--------------------|:-------------------------:|--------------------------------------------:|
+| CameraRGBDSimple   |           camera          |                                     /camera |
+| CameraRGBDSimple   |        depth_camera       |                               /depth_camera |
+| Laser              |          gpu_lidar        |                                      /lidar |
+| IMU                |             imu           |                                        /imu |
+| JointMotorSimple   |          DiffDrive        |                                    /cmd_vel |
+| JoystickAdapter    |          DiffDrive        |                                    /cmd_vel |
+| OmniRobot          |       model/odometer      |  /model/ + odometry_target_name + /odometry |
+| DifferentialRobot  |       model/odometer      |  /model/ + odometry_target_name + /odometry |
 
 
 ## Example Usage
@@ -178,5 +183,22 @@ the <a href="https://github.com/robocomp/robocomp-robolab"> standard Robocomp co
 <p>
 You should now be able to move your robot using the Joystick. Have fun!
 </p>
+
+## Supported Robocomp Interfaces
+
+<p> Gazebo2Robocomp not only has the ability to collect data from Gazebo sensors 
+and plugins, it also provides <a href="https://github.com/robocomp/robocomp/blob/development/interfaces/IDSLs/Gazebo2Robocomp.idsl">interfaces</a> to other Robocomp Components with the ability to call <strong>services</strong> offered by plugins. 
+Currently the supported services are the following:
+</p>
+
+
+| Gazebo2Robocomp Interface                                                                                                | Gazebo sensor or plugin |                                 Service |
+|--------------------------------------------------------------------------------------------------------------------------|:-----------------------:|----------------------------------------:|
+| <strong>CreateBoxEntity</strong>                    |       UserCommand       |   /world/ + gazebo_world_name + /create |
+| <strong>CreateCapsuleEntity</strong>  |       UserCommand       |   /world/ + gazebo_world_name + /create |
+| <strong>CreateCylinderEntity</strong> |       UserCommand       |   /world/ + gazebo_world_name + /create |
+| <strong>CreateSphereEntity</strong>                                                                                      |       UserCommand       |   /world/ + gazebo_world_name + /create |
+| <strong>RemoveEntity</strong>                                                                                            |       UserCommand       |   /world/ + gazebo_world_name + /remove |
+| <strong>SetEntityPose</strong>                                                                                           |       UserCommand       | /world/ + gazebo_world_name + /set_pose |
 
 
