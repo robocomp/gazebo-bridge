@@ -1,5 +1,5 @@
 //
-// Created by usuario on 2/05/23.
+// Created by Sergio Eslava Velasco on 2/05/23.
 //
 
 #ifndef GAZEBO_BRIDGE_ENTITIESCONTROL_HH
@@ -8,12 +8,30 @@
 // The only required include in the header is this one.
 // All others will depend on what your plugin does.
 #include <gz/sim/System.hh>
+#include <vector>
+#include <string>
+
+#include <gz/common/Console.hh>
+// This header is required to register plugins.
+#include <gz/plugin/Register.hh>
+
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/components/Link.hh>
+#include <sdf/sdf.hh>
+
+#include "gz/sim/components/Pose.hh"
+#include "gz/sim/components/Model.hh"
+#include "gz/sim/components/Name.hh"
+#include "gz/sim/Model.hh"
+#include "gz/sim/Entity.hh"
+#include "gz/sim/Link.hh"
+#include <gz/transport/Node.hh>
+#include <gz/transport/TopicUtils.hh>
 
 // It's good practice to use a custom namespace for your project.
 namespace entities_control {
 
-    // Forward declarations
-    class EntitiesControlPrivate;
+    const std::string HEADER_NAME = "EntitiesControl";
 
     // This is the main plugin's class. It must inherit from System and at least
     // one other interface.
@@ -27,14 +45,26 @@ namespace entities_control {
             public gz::sim::ISystemConfigure,
             public gz::sim::ISystemPreUpdate
     {
-        /// \brief Constructor
-    public: EntitiesControl();
+
+    public:
+
+        /// Copy of the sdf configuration used for this plugin
+        sdf::ElementPtr sdfConfig;
+        /// Reference to the Entity Component System
+        gz::sim::EntityComponentManager *ecm;
+        /// Initialization flag.
+        bool initialized{false};
+
+        /// Constructor
+        EntitiesControl();
+
+#pragma region Gazebo Execution Flow
 
         // Plugins inheriting ISystemPostUpdate must implement the PostUpdate
         // callback. This is called at every simulation iteration after the physics
-        // updates the world. The _info variable provides information such as time,
-        // while the _ecm provides an interface to all entities and components in
-        // simulation.
+        // updates the world.
+        // [_info] This provides information such as time,
+        // [_ecm] This provides an interface to all entities and components in simulation.
     public: void PostUpdate(const gz::sim::UpdateInfo &_info,
                             const gz::sim::EntityComponentManager &_ecm) override;
 
@@ -43,13 +73,35 @@ namespace entities_control {
                            gz::sim::EntityComponentManager &_ecm,
                            gz::sim::EventManager &_eventMgr) final;
 
+        // Plugins inheriting ISystemPreUpdate must implement the PreUpdate
+        // callback. This is called at every simulation iteration before the physics
+        // updates the world.
+        // [_info] This provides information such as time,
+        // [_ecm] This provides an interface to all entities and components in simulation.
     public: void PreUpdate(const gz::sim::UpdateInfo &_info,
                            gz::sim::EntityComponentManager &_ecm) override;
 
-        /// Private data pointer
-    private: std::unique_ptr<EntitiesControlPrivate> dataPtr;
-    };
+#pragma endregion Gazebo Execution Flow
 
+
+        /// Initialize the plugin.
+        /// [_ecm] Immutable reference to the EntityComponentManager.
+        /// [_sdf] The SDF Element associated with this system plugin.
+    private:
+        void Load(const gz::sim::EntityComponentManager &_ecm,
+                      const sdf::ElementPtr &_sdf);
+        void SetLinkLinearVelocity(gz::sim::EntityComponentManager& _ecm,
+                                       sdf::ElementPtr _sdf,
+                                       const std::string& _linkName,
+                                       const gz::math::Vector3d& _linearVelocity);
+
+    public:
+
+        // TODO: Cambiar el vector a "const RoboCompGazebo2Robocomp::Vector3"
+        void SetLinkLinearVelocity(const std::string& _linkName, const gz::math::Vector3d& _linearVelocity);
+
+
+    };
 }
 
 #endif //GAZEBO_BRIDGE_ENTITIESCONTROL_HH
