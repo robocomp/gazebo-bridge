@@ -31,9 +31,14 @@
 
 #include <genericworker.h>
 #include <innermodel/innermodel.h>
+#include <fps/fps.h>
+#include <string>
+
+#include "topics.h"
+
+// Gazebo
 #include <gz/msgs.hh>
 #include <gz/transport.hh>
-#include <fps/fps.h>
 
 class SpecificWorker : public GenericWorker
 {

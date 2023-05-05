@@ -1,0 +1,30 @@
+CommonBehavior.Endpoints=tcp -p 10217
+
+# Endpoints for implements interfaces
+CameraRGBDSimple.Endpoints=tcp -p 10096
+Laser.Endpoints=tcp -p 10003
+IMU.Endpoints=tcp -p 10005
+JointMotorSimple.Endpoints=tcp -p 10006
+DifferentialRobot.Endpoints=tcp -p 10007
+OmniRobot.Endpoints=tcp -p 10004
+Gazebo2Robocomp.Endpoints=tcp -p 10008
+
+
+
+# Endpoints for subscriptions interfaces
+JoystickAdapterTopic.Endpoints=tcp -p 11025
+
+
+# This property is used by the clients to connect to IceStorm.
+TopicManager.Proxy=IceStorm/TopicManager:default -p 9999
+
+InnerModelPath = innermodel.xml
+
+# Custom parameters
+odometry_target_name = None
+gazebo_world_name = shapes
+
+Ice.Warn.Connections=0
+Ice.Trace.Network=0
+Ice.Trace.Protocol=0
+Ice.MessageSizeMax=20004800

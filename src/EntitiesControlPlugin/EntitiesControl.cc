@@ -37,6 +37,31 @@ void EntitiesControl::Configure(const gz::sim::Entity &_entity,
     sdfConfig = _sdf->Clone();
     ecm = &_ecm;
 
+    ///////////////////////////////////////////////////////
+    ////// CREATION OF SetLinkLinearVelocity SERVICE //////
+    ///////////////////////////////////////////////////////
+
+    // Getting the name of the world
+    const components::Name *constCmp = _ecm.Component<components::Name>(_entity);
+    const std::string &worldName = constCmp->Data();
+
+    auto validWorldName = transport::TopicUtils::AsValidTopic(worldName);
+    if (validWorldName.empty())
+    {
+        gzerr << "World name [" << worldName
+              << "] doesn't work well with transport, services not advertised."
+              << std::endl;
+        return;
+    }
+
+    // Create service
+    std::string serviceName{"/world/" + validWorldName + "/set_link_linear_velocity"};
+    node.Advertise(serviceName, &EntitiesControl::SetLinkLinearVelocityService, this);
+
+    gzmsg << "[" << HEADER_NAME << "]" << " Service created: " << "[" << serviceName << "]" << std::endl;
+
+    ///////////////////////////////////////////////////////
+
     // Status Message
     gzmsg << "[" << HEADER_NAME << "] Configured." << endl;
 }
@@ -87,60 +112,20 @@ void EntitiesControl::SetLinkLinearVelocity(EntityComponentManager& _ecm,
     Link link(entity);
 
     link.SetLinearVelocity(_ecm, _linearVelocity);
-
-    /*
-    optional<string> name = link.Name(_ecm);
-    cout << "NOMBRE: " << name.value() << endl;
-    */
-
-
-    /*
- // Obtener un puntero al elemento "link" con el nombre especificado
- // TODO: Esto no funciona, no está devolviendo todos los links de la escena del pendulo.
- // Quizas sea porque el pendulo está en el .sdf a través un include????
- sdf::ElementPtr linkElem = _sdf->GetElement("link");
-
-
- cout << "" << linkElem->GetName() << endl;
- while (linkElem != nullptr) {
-
-     if (linkElem->HasAttribute("name") && linkElem->GetAttribute("name")->GetAsString() == _linkName) {
-         break;
-     }
-
-     // DEBUG //
-     cout << linkElem->GetAttribute("name")->GetAsString() << endl;
-     linkElem = linkElem->GetNextElement("link");
- }
- if (linkElem == nullptr) {
-     gzerr << "No se encontró el elemento <link> con el nombre '" << _linkName << "'" << std::endl;
-     return;
- }
-
- // Obtener el nombre del modelo y el link
- std::string modelName = linkElem->GetParent()->Get<std::string>("name");
- std::string linkName = linkElem->Get<std::string>("name");
-
- // Obtener la entidad correspondiente en el mundo de simulación
- Entity entity = _ecm.EntityByComponents(
-         components::Name(linkName));
-
- if(entity == kNullEntity){
-     gzerr << "No encontrada entidad en la simulación";
-     return;
- }
-
- Link link(entity);
-
- // Establecer la velocidad lineal del enlace
- link.SetLinearVelocity(_ecm, _linearVelocity);
-  */
 }
 
 #pragma region Public Interfaces
 
-void EntitiesControl::SetLinkLinearVelocity(const std::string& _linkName, const gz::math::Vector3d& _linearVelocity){
-    SetLinkLinearVelocity(*ecm, sdfConfig, _linkName, _linearVelocity);
+bool EntitiesControl::SetLinkLinearVelocityService(const gz::msgs::Pose &_req, gz::msgs::Boolean &_res){
+
+    const std::string& linkName = _req.name();
+    const auto& vel = _req.position();
+    gz::math::Vector3<double> linearVelocity(vel.x(), vel.y(), vel.z());
+
+    // TODO: No es buen aproach llamar directamente a la función sin pasar por el flujo de ejecución de Gazebo,
+    // Probar con asignar atributos de clase y que las llamadas al método se hagan desde el PreUpdate
+    // Quizás la solución es que entre la llamada en una lista y el PreUpdate ejecute la lista.
+    // SetLinkLinearVelocity(*ecm, sdfConfig, linkName, linearVelocity);
 }
 
 #pragma endregion Public Interfaces

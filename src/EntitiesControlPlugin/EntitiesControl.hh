@@ -28,6 +28,7 @@
 #include <gz/transport/Node.hh>
 #include <gz/transport/TopicUtils.hh>
 
+
 // It's good practice to use a custom namespace for your project.
 namespace entities_control {
 
@@ -54,6 +55,8 @@ namespace entities_control {
         gz::sim::EntityComponentManager *ecm;
         /// Initialization flag.
         bool initialized{false};
+        /// Gazebo communication node.
+        gz::transport::Node node;
 
         /// Constructor
         EntitiesControl();
@@ -97,8 +100,7 @@ namespace entities_control {
 
     public:
 
-        // TODO: Cambiar el vector a "const RoboCompGazebo2Robocomp::Vector3"
-        void SetLinkLinearVelocity(const std::string& _linkName, const gz::math::Vector3d& _linearVelocity);
+        bool SetLinkLinearVelocityService(const gz::msgs::Pose &_req, gz::msgs::Boolean &_res);
 
 
     };
