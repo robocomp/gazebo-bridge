@@ -121,24 +121,6 @@ void SpecificWorker::compute()
     }
      */
 
-    // Creating Entity Factory
-    gz::msgs::Pose dataMsg;
-
-    dataMsg.set_name("link_robocomp");
-    gz::msgs::Vector3d *position = dataMsg.mutable_position();
-    position->set_y(-10.0f);
-
-    gz::msgs::Boolean reply;
-    bool result;
-    const unsigned int timeout = 300;
-
-    // Request of the Gazebo service
-    bool executed = node.Request("/world/"+ gazeboWorldName +"/set_link_linear_velocity", dataMsg, timeout, reply, result);
-
-    if (executed)
-        cout << "[Create] Service executed successfully" << endl;
-    else
-        cerr << "[Create] Service call timed out" << endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
