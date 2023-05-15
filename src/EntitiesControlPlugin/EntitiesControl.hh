@@ -25,85 +25,104 @@
 #include "gz/sim/Model.hh"
 #include "gz/sim/Entity.hh"
 #include "gz/sim/Link.hh"
+#include "gz/sim/Util.hh"
+
 #include <gz/transport/Node.hh>
 #include <gz/transport/TopicUtils.hh>
 
 
-// It's good practice to use a custom namespace for your project.
-namespace entities_control {
+namespace gz {
 
-    const std::string HEADER_NAME = "EntitiesControl";
+    namespace sim {
 
-    // This is the main plugin's class. It must inherit from System and at least
-    // one other interface.
-    // Here we use `ISystemPostUpdate`, which is used to get results after
-    // physics runs. The opposite of that, `ISystemPreUpdate`, would be used by
-    // plugins that want to send commands.
-    // "ISystemConfigure" is used to set the initial values of our private class
-    class EntitiesControl:
-            public gz::sim::System,
-            public gz::sim::ISystemPostUpdate,
-            public gz::sim::ISystemConfigure,
-            public gz::sim::ISystemPreUpdate
-    {
+        // It's good practice to use a custom namespace for your project.
+        namespace systems {
 
-    public:
+            const std::string HEADER_NAME = "EntitiesControl";
 
-        /// Copy of the sdf configuration used for this plugin
-        sdf::ElementPtr sdfConfig;
-        /// Reference to the Entity Component System
-        gz::sim::EntityComponentManager *ecm;
-        /// Initialization flag.
-        bool initialized{false};
-        /// Gazebo communication node.
-        gz::transport::Node node;
+            // This is the main plugin's class. It must inherit from System and at least
+            // one other interface.
+            // Here we use `ISystemPostUpdate`, which is used to get results after
+            // physics runs. The opposite of that, `ISystemPreUpdate`, would be used by
+            // plugins that want to send commands.
+            // "ISystemConfigure" is used to set the initial values of our private class
+            class EntitiesControl :
+                    public System,
+                    public ISystemPostUpdate,
+                    public ISystemConfigure,
+                    public ISystemPreUpdate {
 
-        /// Constructor
-        EntitiesControl();
+            public:
+
+                /// Constructor
+                explicit EntitiesControl();
+
+                // Destructor
+                ~EntitiesControl() final;
+
+            public:
+                /// Copy of the sdf configuration used for this plugin
+                sdf::ElementPtr sdfConfig;
+                /// Reference to the Entity Component System
+                gz::sim::EntityComponentManager *ecm;
+                /// Initialization flag.
+                bool initialized{false};
+
+                gz::sim::Model model;
+
+
+                /// Gazebo communication node.
+                gz::transport::Node node;
+                /// Entities Control get world position message publisher.
+                std::vector<gz::transport::Node::Publisher> getWorldPositionPubs;
+
 
 #pragma region Gazebo Execution Flow
 
-        // Plugins inheriting ISystemPostUpdate must implement the PostUpdate
-        // callback. This is called at every simulation iteration after the physics
-        // updates the world.
-        // [_info] This provides information such as time,
-        // [_ecm] This provides an interface to all entities and components in simulation.
-    public: void PostUpdate(const gz::sim::UpdateInfo &_info,
-                            const gz::sim::EntityComponentManager &_ecm) override;
+                // Plugins inheriting ISystemPostUpdate must implement the PostUpdate
+                // callback. This is called at every simulation iteration after the physics
+                // updates the world.
+                // [_info] This provides information such as time,
+                // [_ecm] This provides an interface to all entities and components in simulation.
+            public:
+                void PostUpdate(const gz::sim::UpdateInfo &_info,
+                                const gz::sim::EntityComponentManager &_ecm) override;
 
-    public: void Configure(const gz::sim::Entity &_id,
-                           const std::shared_ptr<const sdf::Element> &_sdf,
-                           gz::sim::EntityComponentManager &_ecm,
-                           gz::sim::EventManager &_eventMgr) final;
+            public:
+                void Configure(const gz::sim::Entity &_id,
+                               const std::shared_ptr<const sdf::Element> &_sdf,
+                               gz::sim::EntityComponentManager &_ecm,
+                               gz::sim::EventManager &_eventMgr) final;
 
-        // Plugins inheriting ISystemPreUpdate must implement the PreUpdate
-        // callback. This is called at every simulation iteration before the physics
-        // updates the world.
-        // [_info] This provides information such as time,
-        // [_ecm] This provides an interface to all entities and components in simulation.
-    public: void PreUpdate(const gz::sim::UpdateInfo &_info,
-                           gz::sim::EntityComponentManager &_ecm) override;
+                // Plugins inheriting ISystemPreUpdate must implement the PreUpdate
+                // callback. This is called at every simulation iteration before the physics
+                // updates the world.
+                // [_info] This provides information such as time,
+                // [_ecm] This provides an interface to all entities and components in simulation.
+            public:
+                void PreUpdate(const gz::sim::UpdateInfo &_info,
+                               gz::sim::EntityComponentManager &_ecm) override;
 
 #pragma endregion Gazebo Execution Flow
 
 
-        /// Initialize the plugin.
-        /// [_ecm] Immutable reference to the EntityComponentManager.
-        /// [_sdf] The SDF Element associated with this system plugin.
-    private:
-        void Load(const gz::sim::EntityComponentManager &_ecm,
-                      const sdf::ElementPtr &_sdf);
-        void SetLinkLinearVelocity(gz::sim::EntityComponentManager& _ecm,
-                                       sdf::ElementPtr _sdf,
-                                       const std::string& _linkName,
-                                       const gz::math::Vector3d& _linearVelocity);
+            private:
+                /// Initialize the plugin.
+                /// [_ecm] Immutable reference to the EntityComponentManager.
+                /// [_sdf] The SDF Element associated with this system plugin.
+                void Load(const gz::sim::EntityComponentManager &_ecm,
+                          const sdf::ElementPtr &_sdf);
 
-    public:
+                void SetLinkLinearVelocity(gz::sim::EntityComponentManager &_ecm,
+                                           sdf::ElementPtr _sdf,
+                                           const std::string &_linkName,
+                                           const gz::math::Vector3d &_linearVelocity);
 
-        bool SetLinkLinearVelocityService(const gz::msgs::Pose &_req, gz::msgs::Boolean &_res);
+            public:
+                void OnGetWorldPosition(const gz::msgs::Pose &_msg);
 
-
-    };
+            };
+        }
+    }
 }
-
 #endif //GAZEBO_BRIDGE_ENTITIESCONTROL_HH

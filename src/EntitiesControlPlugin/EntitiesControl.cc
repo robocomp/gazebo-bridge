@@ -5,82 +5,54 @@
 // Important to include the plugin's header.
 #include "EntitiesControl.hh"
 
-// This is required to register the plugin. Make sure the interfaces match
-// what's in the header.
-GZ_ADD_PLUGIN(
-        entities_control::EntitiesControl,
-        gz::sim::System,
-        entities_control::EntitiesControl::ISystemConfigure,
-        entities_control::EntitiesControl::ISystemPostUpdate,
-        entities_control::EntitiesControl::ISystemPreUpdate)
-
 using namespace gz;
 using namespace sim;
 using namespace systems;
 using namespace std;
 
-using namespace entities_control;
 
-EntitiesControl::EntitiesControl()
-{
+EntitiesControl::EntitiesControl(){
 }
+
+EntitiesControl::~EntitiesControl() = default;
+
+
+class EntitiesControlCommandBase {
+
+};
 
 
 #pragma region Gazebo Execution Flow
+
 //////////////////////////////////////////////////
 void EntitiesControl::Configure(const gz::sim::Entity &_entity,
                                 const std::shared_ptr<const sdf::Element> &_sdf,
                                 gz::sim::EntityComponentManager &_ecm,
-                                gz::sim::EventManager &/*_eventMgr*/)
-{
+                                gz::sim::EventManager &/*_eventMgr*/) {
     // We save the .sdf and the ECSystem in memory for future use.
     sdfConfig = _sdf->Clone();
     ecm = &_ecm;
+    model = Model(_entity);
 
-    ///////////////////////////////////////////////////////
-    ////// CREATION OF SetLinkLinearVelocity SERVICE //////
-    ///////////////////////////////////////////////////////
 
-    // Getting the name of the world
-    const components::Name *constCmp = _ecm.Component<components::Name>(_entity);
-    const std::string &worldName = constCmp->Data();
-
-    auto validWorldName = transport::TopicUtils::AsValidTopic(worldName);
-    if (validWorldName.empty())
-    {
-        gzerr << "World name [" << worldName
-              << "] doesn't work well with transport, services not advertised."
-              << std::endl;
-        return;
-    }
-
-    // Create service
-    std::string serviceName{"/world/" + validWorldName + "/set_link_linear_velocity"};
-    node.Advertise(serviceName, &EntitiesControl::SetLinkLinearVelocityService, this);
-
-    gzmsg << "[" << HEADER_NAME << "]" << " Service created: " << "[" << serviceName << "]" << std::endl;
-
-    ///////////////////////////////////////////////////////
 
     // Status Message
-    gzmsg << "[" << HEADER_NAME << "] Configured." << endl;
+    gzmsg << "[" << HEADER_NAME << "] Configured." << std::endl;
+
 }
 
 //////////////////////////////////////////////////
 // Here we implement the PostUpdate function, which is called at every iteration.
 void EntitiesControl::PostUpdate(const gz::sim::UpdateInfo &_info,
-                                 const gz::sim::EntityComponentManager &/*_ecm*/)
-{
+                                 const gz::sim::EntityComponentManager &/*_ecm*/) {
 
 }
 
 void EntitiesControl::PreUpdate(
         const gz::sim::UpdateInfo &_info,
-        gz::sim::EntityComponentManager &_ecm)
-{
+        gz::sim::EntityComponentManager &_ecm) {
     // Initialization settings
-    if (!initialized)
-    {
+    if (!initialized) {
         // We call Load here instead of Configure because we can't be guaranteed
         // that all entities have been created when Configure is called
         Load(_ecm, sdfConfig);
@@ -95,15 +67,37 @@ void EntitiesControl::PreUpdate(
 
 
 void EntitiesControl::Load(const gz::sim::EntityComponentManager &_ecm,
-                             const sdf::ElementPtr &_sdf) {
+                           const sdf::ElementPtr &_sdf) {
+
+    ///////////////////////////////////////////////////////
+    ////// CREATION OF GetWorldPosition TOPIC /////////////
+    ///////////////////////////////////////////////////////
+
+    std::vector<Entity> modelEntities = model.Models(_ecm);
+
+    for (int i = 0; i < modelEntities.size(); ++i) {
+
+        Model model = Model(modelEntities[i]);
+
+        auto topic = ("/model/" + model.Name(_ecm) + "/get_world_position");
+
+        gz::transport::Node::Publisher getWorldPositionPub = node.Advertise<gz::msgs::Pose>(topic);
+        node.Subscribe(topic, &EntitiesControl::OnGetWorldPosition, this);
+
+        getWorldPositionPubs.push_back(getWorldPositionPub);
+
+        gzmsg << "[" << HEADER_NAME << "] Topic: " << topic << " created." << std::endl;
+    }
+
+
+    ///////////////////////////////////////////////////////
 
 }
 
-void EntitiesControl::SetLinkLinearVelocity(EntityComponentManager& _ecm,
-                                              sdf::ElementPtr _sdf,
-                                              const std::string& _linkName,
-                                              const gz::math::Vector3d& _linearVelocity)
-{
+void EntitiesControl::SetLinkLinearVelocity(EntityComponentManager &_ecm,
+                                            sdf::ElementPtr _sdf,
+                                            const std::string &_linkName,
+                                            const gz::math::Vector3d &_linearVelocity) {
     Entity entity = _ecm.EntityByComponents(components::Name(_linkName));
 
     if (!entity)
@@ -114,19 +108,19 @@ void EntitiesControl::SetLinkLinearVelocity(EntityComponentManager& _ecm,
     link.SetLinearVelocity(_ecm, _linearVelocity);
 }
 
-#pragma region Public Interfaces
+void EntitiesControl::OnGetWorldPosition(const gz::msgs::Pose &_msg) {
+    cout << "GetWorldPosition" << endl;
 
-bool EntitiesControl::SetLinkLinearVelocityService(const gz::msgs::Pose &_req, gz::msgs::Boolean &_res){
-
-    const std::string& linkName = _req.name();
-    const auto& vel = _req.position();
-    gz::math::Vector3<double> linearVelocity(vel.x(), vel.y(), vel.z());
-
-    // TODO: No es buen aproach llamar directamente a la función sin pasar por el flujo de ejecución de Gazebo,
-    // Probar con asignar atributos de clase y que las llamadas al método se hagan desde el PreUpdate
-    // Quizás la solución es que entre la llamada en una lista y el PreUpdate ejecute la lista.
-    // SetLinkLinearVelocity(*ecm, sdfConfig, linkName, linearVelocity);
+    return true;
 }
 
-#pragma endregion Public Interfaces
+// This is required to register the plugin. Make sure the interfaces match
+// what's in the header.
+GZ_ADD_PLUGIN(
+        EntitiesControl,
+        System,
+        EntitiesControl::ISystemConfigure,
+        EntitiesControl::ISystemPostUpdate,
+        EntitiesControl::ISystemPreUpdate)
 
+GZ_ADD_PLUGIN_ALIAS(EntitiesControl, "gz::sim::systems::EntitiesControl")
