@@ -29,28 +29,22 @@ void EntitiesControl::Configure(const gz::sim::Entity &_entity,
                                 const std::shared_ptr<const sdf::Element> &_sdf,
                                 gz::sim::EntityComponentManager &_ecm,
                                 gz::sim::EventManager &/*_eventMgr*/) {
+
     // We save the .sdf and the ECSystem in memory for future use.
     sdfConfig = _sdf->Clone();
     ecm = &_ecm;
     model = Model(_entity);
-
-
 
     // Status Message
     gzmsg << "[" << HEADER_NAME << "] Configured." << std::endl;
 
 }
 
-//////////////////////////////////////////////////
-// Here we implement the PostUpdate function, which is called at every iteration.
-void EntitiesControl::PostUpdate(const gz::sim::UpdateInfo &_info,
-                                 const gz::sim::EntityComponentManager &/*_ecm*/) {
-
-}
-
+//////////////////////////////////////////////////////////////
 void EntitiesControl::PreUpdate(
         const gz::sim::UpdateInfo &_info,
         gz::sim::EntityComponentManager &_ecm) {
+
     // Initialization settings
     if (!initialized) {
         // We call Load here instead of Configure because we can't be guaranteed
@@ -60,9 +54,20 @@ void EntitiesControl::PreUpdate(
         initialized = true;
     }
 
-    //SetLinkLinearVelocity(const_cast<EntityComponentManager &>(_ecm), sdfConfig, "link_robocomp", gz::math::Vector3d(0.0, -1.0, 0.0));
 }
 
+void EntitiesControl::Update(const gz::sim::UpdateInfo &_info,
+            gz::sim::EntityComponentManager &_ecm){
+    
+}
+
+
+// Here we implement the PostUpdate function, which is called at every iteration.
+void EntitiesControl::PostUpdate(const gz::sim::UpdateInfo &_info,
+                                 const gz::sim::EntityComponentManager &/*_ecm*/) {
+
+}
+//////////////////////////////////////////////////////////////
 #pragma endregion Gazebo Execution Flow
 
 
@@ -82,15 +87,11 @@ void EntitiesControl::Load(const gz::sim::EntityComponentManager &_ecm,
         auto topic = ("/model/" + model.Name(_ecm) + "/get_world_position");
 
         gz::transport::Node::Publisher getWorldPositionPub = node.Advertise<gz::msgs::Pose>(topic);
-        node.Subscribe(topic, &EntitiesControl::OnGetWorldPosition, this);
 
-        getWorldPositionPubs.push_back(getWorldPositionPub);
+        publishers.push_back(getWorldPositionPub);
 
         gzmsg << "[" << HEADER_NAME << "] Topic: " << topic << " created." << std::endl;
     }
-
-
-    ///////////////////////////////////////////////////////
 
 }
 
@@ -106,12 +107,6 @@ void EntitiesControl::SetLinkLinearVelocity(EntityComponentManager &_ecm,
     Link link(entity);
 
     link.SetLinearVelocity(_ecm, _linearVelocity);
-}
-
-void EntitiesControl::OnGetWorldPosition(const gz::msgs::Pose &_msg) {
-    cout << "GetWorldPosition" << endl;
-
-    return true;
 }
 
 // This is required to register the plugin. Make sure the interfaces match

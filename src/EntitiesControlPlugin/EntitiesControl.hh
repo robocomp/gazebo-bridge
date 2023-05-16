@@ -48,9 +48,10 @@ namespace gz {
             // "ISystemConfigure" is used to set the initial values of our private class
             class EntitiesControl :
                     public System,
-                    public ISystemPostUpdate,
                     public ISystemConfigure,
-                    public ISystemPreUpdate {
+                    public ISystemPreUpdate,
+                    public ISystemUpdate,
+                    public ISystemPostUpdate{
 
             public:
 
@@ -74,19 +75,11 @@ namespace gz {
                 /// Gazebo communication node.
                 gz::transport::Node node;
                 /// Entities Control get world position message publisher.
-                std::vector<gz::transport::Node::Publisher> getWorldPositionPubs;
+                std::vector<gz::transport::Node::Publisher> publishers;
 
 
 #pragma region Gazebo Execution Flow
 
-                // Plugins inheriting ISystemPostUpdate must implement the PostUpdate
-                // callback. This is called at every simulation iteration after the physics
-                // updates the world.
-                // [_info] This provides information such as time,
-                // [_ecm] This provides an interface to all entities and components in simulation.
-            public:
-                void PostUpdate(const gz::sim::UpdateInfo &_info,
-                                const gz::sim::EntityComponentManager &_ecm) override;
 
             public:
                 void Configure(const gz::sim::Entity &_id,
@@ -102,6 +95,24 @@ namespace gz {
             public:
                 void PreUpdate(const gz::sim::UpdateInfo &_info,
                                gz::sim::EntityComponentManager &_ecm) override;
+
+                // Plugins inheriting ISystemUpdate must implement the Update
+                // callback. This is called at every simulation iteration.
+                // [_info] This provides information such as time,
+                // [_ecm] This provides an interface to all entities and components in simulation.
+            public:
+                void Update(const gz::sim::UpdateInfo &_info,
+                               gz::sim::EntityComponentManager &_ecm) override;
+
+                // Plugins inheriting ISystemPostUpdate must implement the PostUpdate
+                // callback. This is called at every simulation iteration after the physics
+                // updates the world.
+                // [_info] This provides information such as time,
+                // [_ecm] This provides an interface to all entities and components in simulation.
+            public:
+                void PostUpdate(const gz::sim::UpdateInfo &_info,
+                                const gz::sim::EntityComponentManager &_ecm) override;
+
 
 #pragma endregion Gazebo Execution Flow
 
