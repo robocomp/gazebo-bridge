@@ -11,16 +11,114 @@ using namespace systems;
 using namespace std;
 
 
-EntitiesControl::EntitiesControl(){
+EntitiesControl::EntitiesControl(): System(), dataPtr(std::make_unique<EntitiesControlPrivate>()){
 }
 
 EntitiesControl::~EntitiesControl() = default;
 
 
-class EntitiesControlCommandBase {
+class EntitiesControlInterface{
+
+public:
+    /// Pointer to entity component manager. We don't assume ownership.
+    EntityComponentManager *ecm{nullptr};
+
+    /// \brief Creator interface, shared among all commands that need it.
+    std::unique_ptr<SdfEntityCreator> creator{nullptr};
+
+    /// \brief World entity.
+    Entity worldEntity{kNullEntity};
 
 };
 
+class EntitiesControlCommandBase {
+
+public:
+    /// \brief Constructor
+    /// \param[in] _msg Message containing user command.
+    /// \param[in] _iface Pointer to interfaces shared by all commands.
+    EntitiesControlCommandBase(google::protobuf::Message *_msg,
+    std::shared_ptr<EntitiesControlInterface> &_iface,
+    gz::transport::Node::Publisher &_publisher) : msg(_msg), iface(_iface), publisher(_publisher) {};
+
+    /// \brief Destructor.
+    virtual ~EntitiesControlCommandBase(){
+        if (this->msg != nullptr)
+            delete this->msg;
+        this->msg = nullptr;
+    };
+
+    /// \brief Execute the command. All subclasses must implement this
+    /// function and update entities and components so the command takes effect.
+    /// \return True if command was properly executed.
+    virtual bool Execute() = 0;
+
+protected:
+
+    /// \brief Message containing command.
+    google::protobuf::Message *msg{nullptr};
+
+    /// \brief Keep pointer to interfaces shared among commands.
+    const std::shared_ptr<EntitiesControlInterface> iface{nullptr};
+
+    /// \brief Publisher instance for the topic
+    gz::transport::Node::Publisher publisher;
+};
+
+class GetGlobalPositionCommand : public EntitiesControlCommandBase{
+public:
+
+    /// \brief Constructor
+    /// \param[in] _msg Message identifying the entity to be removed.
+    /// \param[in] _iface Pointer to user commands interface.
+    GetGlobalPositionCommand(msgs::Pose *_msg,
+        std::shared_ptr<EntitiesControlInterface> &_iface,
+        gz::transport::Node::Publisher &_publisher) : EntitiesControlCommandBase(_msg, _iface, _publisher) {};
+
+    // Inherited
+    bool Execute() final{
+
+        // Casting the general message to the specific one that use this command.
+        auto getGlobalPositionMsg = dynamic_cast<const msgs::Pose *>(this->msg);
+        if (nullptr == getGlobalPositionMsg)
+        {
+            gzerr << "Internal error, null create message" << std::endl;
+            return false;
+        }
+
+        // Get global position from name in the message.
+
+        //Construct new message to publish.
+        auto msg = msgs::Pose();
+
+        // Publishing new information to the topic.
+        publisher.Publish(msg);
+
+        return true;
+    };
+};
+
+/// \brief Private EntitiesControl data class.
+class gz::sim::systems::EntitiesControlPrivate{
+public:
+
+    /// Initialize the plugin.
+    /// [_ecm] Immutable reference to the EntityComponentManager.
+    /// [_sdf] The SDF Element associated with this system plugin.
+    void Load(const gz::sim::EntityComponentManager &_ecm);
+
+    /// \brief Flag used for initialization settings in PreUpdate.
+    bool initialized{false};
+
+    /// \brief Queue of commands pending execution.
+    std::vector<std::unique_ptr<EntitiesControlCommandBase>> pendingCmds;
+
+    /// \brief Gazebo communication node.
+    transport::Node node;
+
+    /// \brief Object holding several interfaces that can be used by any command.
+    std::shared_ptr<EntitiesControlInterface> iface{nullptr};
+};
 
 #pragma region Gazebo Execution Flow
 
@@ -28,12 +126,15 @@ class EntitiesControlCommandBase {
 void EntitiesControl::Configure(const gz::sim::Entity &_entity,
                                 const std::shared_ptr<const sdf::Element> &_sdf,
                                 gz::sim::EntityComponentManager &_ecm,
-                                gz::sim::EventManager &/*_eventMgr*/) {
+                                gz::sim::EventManager &_eventManager) {
 
-    // We save the .sdf and the ECSystem in memory for future use.
-    sdfConfig = _sdf->Clone();
-    ecm = &_ecm;
-    model = Model(_entity);
+    // Create interfaces shared among commands
+    this->dataPtr->iface = std::make_shared<EntitiesControlInterface>();
+    this->dataPtr->iface->worldEntity = _entity;
+    this->dataPtr->iface->ecm = &_ecm;
+    this->dataPtr->iface->creator =
+            std::make_unique<SdfEntityCreator>(_ecm, _eventManager);
+
 
     // Status Message
     gzmsg << "[" << HEADER_NAME << "] Configured." << std::endl;
@@ -46,19 +147,30 @@ void EntitiesControl::PreUpdate(
         gz::sim::EntityComponentManager &_ecm) {
 
     // Initialization settings
-    if (!initialized) {
+    if (!this->dataPtr->initialized) {
         // We call Load here instead of Configure because we can't be guaranteed
         // that all entities have been created when Configure is called
-        Load(_ecm, sdfConfig);
+        this->dataPtr->Load(_ecm);
 
-        initialized = true;
+        this->dataPtr->initialized = true;
     }
+
+    /*
+    // Publishing in topics.
+    for (auto &cmd : this->dataPtr->pendingCmds)
+    {
+        // Execute
+        if (!cmd->Execute())
+            continue;
+    }
+     */
 
 }
 
 void EntitiesControl::Update(const gz::sim::UpdateInfo &_info,
             gz::sim::EntityComponentManager &_ecm){
-    
+
+
 }
 
 
@@ -71,14 +183,14 @@ void EntitiesControl::PostUpdate(const gz::sim::UpdateInfo &_info,
 #pragma endregion Gazebo Execution Flow
 
 
-void EntitiesControl::Load(const gz::sim::EntityComponentManager &_ecm,
-                           const sdf::ElementPtr &_sdf) {
+void EntitiesControlPrivate::Load(const gz::sim::EntityComponentManager &_ecm) {
 
     ///////////////////////////////////////////////////////
     ////// CREATION OF GetWorldPosition TOPIC /////////////
     ///////////////////////////////////////////////////////
 
-    std::vector<Entity> modelEntities = model.Models(_ecm);
+    // Getting all entities in the world scene.
+    std::vector<Entity> modelEntities = Model(iface->worldEntity).Models(_ecm);
 
     for (int i = 0; i < modelEntities.size(); ++i) {
 
@@ -88,7 +200,11 @@ void EntitiesControl::Load(const gz::sim::EntityComponentManager &_ecm,
 
         gz::transport::Node::Publisher getWorldPositionPub = node.Advertise<gz::msgs::Pose>(topic);
 
-        publishers.push_back(getWorldPositionPub);
+        gz::msgs::Pose *msg = new gz::msgs::Pose();
+        msg->set_name(model.Name(_ecm));
+
+        auto command = std::make_unique<GetGlobalPositionCommand>(msg, this->iface, getWorldPositionPub);
+        this->pendingCmds.push_back(std::move(command));
 
         gzmsg << "[" << HEADER_NAME << "] Topic: " << topic << " created." << std::endl;
     }
@@ -108,6 +224,7 @@ void EntitiesControl::SetLinkLinearVelocity(EntityComponentManager &_ecm,
 
     link.SetLinearVelocity(_ecm, _linearVelocity);
 }
+
 
 // This is required to register the plugin. Make sure the interfaces match
 // what's in the header.
