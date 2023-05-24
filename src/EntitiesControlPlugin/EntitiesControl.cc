@@ -86,10 +86,36 @@ public:
             return false;
         }
 
+        string targetName = getGlobalPositionMsg->name();
+
         // Get global position from name in the message.
+        const Entity targetEntity = this->iface->ecm->EntityByComponents(components::Name(targetName), components::Model());
+
+        Link targetLink;
+        for(auto link : this->iface->ecm->ChildrenByComponents(targetEntity, components::Link())){
+            targetLink = Link(link);
+        }
 
         //Construct new message to publish.
         auto msg = msgs::Pose();
+        msg.set_name(targetName);
+
+        // TODO: Esto devuelve null, no se muy bien por qué.
+        // Getting the world pose of the link
+        std::optional<gz::math::Pose3d> targetPose = targetLink.WorldPose(*this->iface->ecm);
+
+        if(!targetPose){
+            cout << "TargetPose is null" << endl;
+        }
+
+        if (targetPose.has_value()) {
+            msgs::Vector3d *position = msg.mutable_position();
+            position->set_x(targetPose.value().Pos().X());
+            position->set_y(targetPose.value().Pos().Y());
+            position->set_z(targetPose.value().Pos().Z());
+        }else{
+            cout  << "No tiene valor" << endl;
+        }
 
         // Publishing new information to the topic.
         publisher.Publish(msg);
@@ -155,20 +181,12 @@ void EntitiesControl::PreUpdate(
         this->dataPtr->initialized = true;
     }
 
-    /*
     // Publishing in topics.
-    for (auto &cmd : this->dataPtr->pendingCmds)
-    {
+    for (auto &cmd : this->dataPtr->pendingCmds) {
         // Execute
         if (!cmd->Execute())
             continue;
     }
-     */
-
-}
-
-void EntitiesControl::Update(const gz::sim::UpdateInfo &_info,
-            gz::sim::EntityComponentManager &_ecm){
 
 
 }
@@ -201,6 +219,8 @@ void EntitiesControlPrivate::Load(const gz::sim::EntityComponentManager &_ecm) {
         gz::transport::Node::Publisher getWorldPositionPub = node.Advertise<gz::msgs::Pose>(topic);
 
         gz::msgs::Pose *msg = new gz::msgs::Pose();
+
+        // We establish the name of the model initially because it's the only thing that doesn't change in runtime.
         msg->set_name(model.Name(_ecm));
 
         auto command = std::make_unique<GetGlobalPositionCommand>(msg, this->iface, getWorldPositionPub);
