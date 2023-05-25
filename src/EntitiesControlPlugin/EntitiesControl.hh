@@ -51,8 +51,7 @@ namespace gz {
             class EntitiesControl :
                     public System,
                     public ISystemConfigure,
-                    public ISystemPreUpdate,
-                    public ISystemPostUpdate{
+                    public ISystemPreUpdate{
 
             public:
 
@@ -62,12 +61,6 @@ namespace gz {
                 // Destructor
                 ~EntitiesControl() final;
 
-
-
-#pragma region Gazebo Execution Flow
-
-
-            public:
                 void Configure(const gz::sim::Entity &_id,
                                const std::shared_ptr<const sdf::Element> &_sdf,
                                gz::sim::EntityComponentManager &_ecm,
@@ -78,30 +71,11 @@ namespace gz {
                 // updates the world.
                 // [_info] This provides information such as time,
                 // [_ecm] This provides an interface to all entities and components in simulation.
-            public:
                 void PreUpdate(const gz::sim::UpdateInfo &_info,
                                gz::sim::EntityComponentManager &_ecm) override;
 
 
-                // Plugins inheriting ISystemPostUpdate must implement the PostUpdate
-                // callback. This is called at every simulation iteration after the physics
-                // updates the world.
-                // [_info] This provides information such as time,
-                // [_ecm] This provides an interface to all entities and components in simulation.
-            public:
-                void PostUpdate(const gz::sim::UpdateInfo &_info,
-                                const gz::sim::EntityComponentManager &_ecm) override;
-
-
-#pragma endregion Gazebo Execution Flow
-
-
             private:
-
-                void SetLinkLinearVelocity(gz::sim::EntityComponentManager &_ecm,
-                                           sdf::ElementPtr _sdf,
-                                           const std::string &_linkName,
-                                           const gz::math::Vector3d &_linearVelocity);
 
                 std::unique_ptr<EntitiesControlPrivate> dataPtr;
             };
