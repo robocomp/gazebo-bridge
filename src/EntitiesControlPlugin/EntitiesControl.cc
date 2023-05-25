@@ -91,32 +91,24 @@ public:
         // Get global position from name in the message.
         const Entity targetEntity = this->iface->ecm->EntityByComponents(components::Name(targetName), components::Model());
 
-        Link targetLink;
+        Entity targetLink;
         for(auto link : this->iface->ecm->ChildrenByComponents(targetEntity, components::Link())){
-            targetLink = Link(link);
+            targetLink = link;
         }
 
         //Construct new message to publish.
         auto msg = msgs::Pose();
         msg.set_name(targetName);
 
-        // TODO: Esto devuelve null, no se muy bien por qué.
         // Getting the world pose of the link
-        std::optional<gz::math::Pose3d> targetPose = targetLink.WorldPose(*this->iface->ecm);
+        gz::math::Pose3d targetPose = gz::sim::worldPose(targetLink, *this->iface->ecm);
 
-        if(!targetPose){
-            cout << "TargetPose is null" << endl;
-        }
+        msgs::Vector3d *position = msg.mutable_position();
+        position->set_x(targetPose.Pos().X());
+        position->set_y(targetPose.Pos().Y());
+        position->set_z(targetPose.Pos().Z());
 
-        if (targetPose.has_value()) {
-            msgs::Vector3d *position = msg.mutable_position();
-            position->set_x(targetPose.value().Pos().X());
-            position->set_y(targetPose.value().Pos().Y());
-            position->set_z(targetPose.value().Pos().Z());
-        }else{
-            cout  << "No tiene valor" << endl;
-        }
-
+        
         // Publishing new information to the topic.
         publisher.Publish(msg);
 
