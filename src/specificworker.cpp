@@ -49,7 +49,6 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 	return true;
 }
 
-#pragma endregion Gazebo_CallbackFunctions
 
 void SpecificWorker::initialize(int period)
 {
@@ -314,6 +313,12 @@ RoboCompCameraRGBDSimple::TImage SpecificWorker::CameraRGBDSimple_getImage(std::
     return this->cameraImage;
 }
 
+RoboCompCameraRGBDSimple::TImage SpecificWorker::Camera360RGB_getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight)
+{
+//implementCODE
+
+}
+
 #pragma endregion SimpleCameraRGBD
 
 #pragma region OmniRobot
@@ -425,6 +430,12 @@ RoboCompLaser::LaserConfData SpecificWorker::Laser_getLaserConfData()
 RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserData()
 {
     return SpecificWorker::laserData;
+}
+
+RoboCompLidar3D::TLidarData SpecificWorker::Lidar3D_getLidarData(int start, int len)
+{
+//implementCODE
+
 }
 
 #pragma endregion LIDAR
@@ -754,6 +765,25 @@ void SpecificWorker::Gazebo2Robocomp_setEntityPose(std::string name, RoboCompGaz
         cerr << "[Set_Pose] Service call timed out" << endl;
 }
 
+void SpecificWorker::Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity)
+{
+    gz::msgs::Pose pose;
+    pose.set_name(name);
+
+    gz::msgs::Vector3d* poseVelocity = pose.mutable_position();
+    poseVelocity->set_x(velocity.x);
+    poseVelocity->set_y(velocity.y);
+    poseVelocity->set_z(velocity.z);
+
+    node.Request("/world/" + gazeboWorldName + "/set_linear_velocity", pose);
+}
+
+RoboCompGazebo2Robocomp::Vector3 SpecificWorker::Gazebo2Robocomp_getWorldPosition(std::string name)
+{
+//implementCODE
+
+}
+
 #pragma endregion Gazebo2Robocomp_Interfaces
 
 /**
@@ -817,6 +847,39 @@ void SpecificWorker::printNotImplementedWarningMessage(string functionName)
 // RoboCompCameraRGBDSimple::TRGBD
 
 /**************************************/
+// From the RoboCompDifferentialRobot you can use this types:
+// RoboCompDifferentialRobot::TMechParams
+
+/**************************************/
+// From the RoboCompGazebo2Robocomp you can use this types:
+// RoboCompGazebo2Robocomp::Vector3
+// RoboCompGazebo2Robocomp::Quaternion
+
+/**************************************/
+// From the RoboCompIMU you can use this types:
+// RoboCompIMU::Acceleration
+// RoboCompIMU::Gyroscope
+// RoboCompIMU::Magnetic
+// RoboCompIMU::Orientation
+// RoboCompIMU::DataImu
+
+/**************************************/
+// From the RoboCompJointMotorSimple you can use this types:
+// RoboCompJointMotorSimple::MotorState
+// RoboCompJointMotorSimple::MotorParams
+// RoboCompJointMotorSimple::MotorGoalPosition
+// RoboCompJointMotorSimple::MotorGoalVelocity
+
+/**************************************/
+// From the RoboCompLaser you can use this types:
+// RoboCompLaser::LaserConfData
+// RoboCompLaser::TData
+
+/**************************************/
+// From the RoboCompLidar3D you can use this types:
+// RoboCompLidar3D::TPoint
+
+/**************************************/
 // From the RoboCompOmniRobot you can use this types:
 // RoboCompOmniRobot::TMechParams
 
@@ -825,14 +888,4 @@ void SpecificWorker::printNotImplementedWarningMessage(string functionName)
 // RoboCompJoystickAdapter::AxisParams
 // RoboCompJoystickAdapter::ButtonParams
 // RoboCompJoystickAdapter::TData
-
-/**************************************/
-// From the RoboCompLaser you can use this types:
-// RoboCompLaser::LaserConfData
-// RoboCompLaser::TData
-
-/***************************************/
-// From the RoboCompDifferentialRobot you can use this types:
-// RoboCompDifferentialRobot::TMechParams
-
 

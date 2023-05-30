@@ -154,7 +154,7 @@ void EntitiesControl::Configure(const gz::sim::Entity &_entity,
     this->dataPtr->iface->ecm = &_ecm;
     this->dataPtr->iface->creator =
             std::make_unique<SdfEntityCreator>(_ecm, _eventManager);
-    
+
 
    // Getting the world name
    const components::Name *constCmp = _ecm.Component<components::Name>(_entity);
