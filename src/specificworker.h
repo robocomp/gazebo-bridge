@@ -111,11 +111,16 @@ class SpecificWorker : public GenericWorker
 	// LIDAR 3D
 	RoboCompLidar3D::TLidarData Lidar3D_getLidarData(int start, int len);
 
-        // JOYSTICK
-        void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
+    // JOYSTICK
+    void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
 
-        // Gazebo Transport client
-        static gz::transport::Node node;
+    // Gazebo Transport client
+    static gz::transport::Node node;
+
+    // Data structure for the object data tracking funcionality.
+    struct ObjectData{
+        RoboCompGazebo2Robocomp::Vector3 position;
+    };
 
     public slots:
         void compute();
@@ -151,16 +156,26 @@ class SpecificWorker : public GenericWorker
         RoboCompIMU::Magnetic imuMagneticFields;
         RoboCompIMU::Orientation imuOrientation;
 
-        // Callbacks functions
+        // Callbacks functions for sensors
         void depth_camera_cb(const gz::msgs::Image &_msg);
         void lidar_cb(const gz::msgs::LaserScan &_msg);
         void camera_cb(const gz::msgs::Image &_msg);
         void odometry_cb(const gz::msgs::Odometry &_msg);
         void imu_cb(const gz::msgs::IMU &_msg);
 
+        // Objects for the object data tracking
+        std::map<std::string, shared_ptr<ObjectData>> objectsData;
+        void trackObject(const std::string& objectName);
+        void trackObject_cb(const gz::msgs::Pose &_msg);
+
+
 
         // Auxiliar functions
         void printNotImplementedWarningMessage(string functionName);
+        // Checks if an object is being tracked
+        bool isTracking(const std::string& objectName) {
+            return objectsData.count(objectName) > 0;
+        }
 };
 
 #endif

@@ -777,13 +777,6 @@ void SpecificWorker::Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCom
     pose.mutable_position()->set_y(velocity.y);
     pose.mutable_position()->set_z(velocity.z);
 
-    /*
-    gz::msgs::Vector3d* poseVelocity = pose.mutable_position();
-    poseVelocity->set_x(velocity.x);
-    poseVelocity->set_y(velocity.y);
-    poseVelocity->set_z(velocity.z);
-    */
-
     bool executed = node.Request("/world/" + gazeboWorldName + "/set_link_linear_velocity", pose, timeout, reply, result);
 
     if (executed)
@@ -794,8 +787,50 @@ void SpecificWorker::Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCom
 
 RoboCompGazebo2Robocomp::Vector3 SpecificWorker::Gazebo2Robocomp_getWorldPosition(std::string name)
 {
-//implementCODE
+    //If the object is not in the map, we are not tracking it.
+    if(!isTracking(name)){
+        // So we create a topic in which Gazebo is gonna publish their pose data.
+        trackObject(name);
+        cout << "[get_world_position] Object:'" << name << "' is now tracked" << endl;
+    }
 
+    return objectsData[name]->position;
+}
+
+/**
+ * @brief This method requires a serive to Gazebo. This requested service it's going to create a topic
+ * in which Gazebo will publish its pose data.
+ *
+ * @param[in] _objectName Name of the object that we want to track.
+ */
+void SpecificWorker::trackObject(const string &_objectName) {
+    gz::msgs::StringMsg nameMsg;
+    gz::msgs::Boolean reply;
+    bool result;
+    const unsigned int timeout = 300;
+
+    // We require to the create the topic
+    nameMsg.set_data(_objectName);
+    bool executed = node.Request("/world/" + gazeboWorldName + "/get_world_position", nameMsg, timeout, reply, result);
+
+    if (executed)
+        cout << "[get_world_position] Service executed successfully" << endl;
+    else
+        cerr << "[get_world_position] Service call timed out" << endl;
+
+
+    objectsData[_objectName] = std::make_shared<ObjectData>();
+
+    string topic = "/model/" + _objectName + "/get_world_position";
+    node.Subscribe(topic, &SpecificWorker::trackObject_cb, this);
+}
+
+void SpecificWorker::trackObject_cb(const gz::msgs::Pose &_msg) {
+
+    auto objectData = objectsData[_msg.name()];
+    objectData->position.x = _msg.position().x();
+    objectData->position.y = _msg.position().y();
+    objectData->position.z = _msg.position().z();
 }
 
 #pragma endregion Gazebo2Robocomp_Interfaces
