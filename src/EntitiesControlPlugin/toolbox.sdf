@@ -12,6 +12,8 @@
     <plugin filename="EntitiesControl" name="gz::sim::v7::systems::EntitiesControl">
     </plugin>
     
+    <plugin name='gz::sim::systems::UserCommands' filename='gz-sim-user-commands-system'/>
+    
     <model name='ground_plane'>
       <static>true</static>
       <link name='link'>

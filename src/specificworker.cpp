@@ -768,14 +768,28 @@ void SpecificWorker::Gazebo2Robocomp_setEntityPose(std::string name, RoboCompGaz
 void SpecificWorker::Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity)
 {
     gz::msgs::Pose pose;
-    pose.set_name(name);
+    gz::msgs::Boolean reply;
+    bool result;
+    const unsigned int timeout = 300;
 
+    pose.set_name(name);
+    pose.mutable_position()->set_x(velocity.x);
+    pose.mutable_position()->set_y(velocity.y);
+    pose.mutable_position()->set_z(velocity.z);
+
+    /*
     gz::msgs::Vector3d* poseVelocity = pose.mutable_position();
     poseVelocity->set_x(velocity.x);
     poseVelocity->set_y(velocity.y);
     poseVelocity->set_z(velocity.z);
+    */
 
-    node.Request("/world/" + gazeboWorldName + "/set_linear_velocity", pose);
+    bool executed = node.Request("/world/" + gazeboWorldName + "/set_link_linear_velocity", pose, timeout, reply, result);
+
+    if (executed)
+        cout << "[set_link_linear_velocity] Service executed successfully" << endl;
+    else
+        cerr << "[set_link_linear_velocity] Service call timed out" << endl;
 }
 
 RoboCompGazebo2Robocomp::Vector3 SpecificWorker::Gazebo2Robocomp_getWorldPosition(std::string name)

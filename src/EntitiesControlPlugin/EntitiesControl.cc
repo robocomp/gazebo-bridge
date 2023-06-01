@@ -37,9 +37,16 @@ public:
     /// \brief Constructor
     /// \param[in] _msg Message containing user command.
     /// \param[in] _iface Pointer to interfaces shared by all commands.
+    /// \param[in] _publisher Publisher for topics that need to be published.
     EntitiesControlCommandBase(google::protobuf::Message *_msg,
     std::shared_ptr<EntitiesControlInterface> &_iface,
     gz::transport::Node::Publisher &_publisher) : msg(_msg), iface(_iface), publisher(_publisher) {};
+
+    /// \brief Constructor
+    /// \param[in] _msg Message containing user command.
+    /// \param[in] _iface Pointer to interfaces shared by all commands.
+    EntitiesControlCommandBase(google::protobuf::Message *_msg,
+                               std::shared_ptr<EntitiesControlInterface> &_iface) : msg(_msg), iface(_iface) {};
 
     /// \brief Destructor.
     virtual ~EntitiesControlCommandBase(){
@@ -113,6 +120,51 @@ public:
         publisher.Publish(msg);
 
         return true;
+    };
+};
+
+class SetLinkLinearVelocityCommand : public EntitiesControlCommandBase{
+public:
+
+    /// \brief Constructor
+    /// \param[in] _msg Message identifying the entity to be removed.
+    /// \param[in] _iface Pointer to user commands interface.
+    SetLinkLinearVelocityCommand(msgs::Pose *_msg,
+                             std::shared_ptr<EntitiesControlInterface> &_iface) : EntitiesControlCommandBase(_msg, _iface) {};
+
+    // Inherited
+    bool Execute() final{
+
+        // Casting the general message to the specific one that use this command.
+        auto commandMsg = dynamic_cast<const msgs::Pose *>(this->msg);
+        if (nullptr == commandMsg)
+        {
+            gzerr << "Internal error, null create message" << std::endl;
+            return false;
+        }
+
+        string targetName = commandMsg->name();
+
+        Entity entity = this->iface->ecm->EntityByComponents(components::Name(targetName), components::Link());
+
+        // Check if exists an entity with the given parameters.
+        if (!entity){
+            gzerr << "[" << HEADER_NAME << "] Link not found." << endl;
+            return false;
+        }
+
+        const gz::math::Vector3d& linearVelocity = gz::math::Vector3d(commandMsg->position().x(), commandMsg->position().y(), commandMsg->position().z());
+
+        Link link(entity);
+
+        if(link.Valid(*this->iface->ecm)){
+
+            link.SetLinearVelocity(*this->iface->ecm, linearVelocity);
+            return true;
+        }
+        else
+            return false;
+
     };
 };
 
@@ -249,11 +301,17 @@ bool EntitiesControlPrivate::SetLinkLinearVelocityService(const msgs::Pose &_req
         return false;
     }
 
-    const gz::math::Vector3d& linearVelocity = gz::math::Vector3d(_req.position().x(), _req.position().y(), _req.position().z());
+    gz::msgs::Pose *msg = new gz::msgs::Pose();
 
-    Link link(entity);
-    link.SetLinearVelocity(*this->iface->ecm, linearVelocity);
+    msg->set_name(_req.name());
+    msg->mutable_position()->set_x(_req.position().x());
+    msg->mutable_position()->set_y(_req.position().y());
+    msg->mutable_position()->set_z(_req.position().z());
 
+    auto command = std::make_unique<SetLinkLinearVelocityCommand>(msg, this->iface);
+    this->pendingCmds.push_back(std::move(command));
+
+    gzmsg << "[" << HEADER_NAME << "] set_link_linear_velocity service requested." << endl;
     return true;
 }
 
