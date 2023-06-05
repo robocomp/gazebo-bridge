@@ -170,6 +170,7 @@ void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
 {
     RoboCompLaser::TLaserData newLaserData;
     RoboCompLaser::LaserConfData newLaserConfData;
+    RoboCompLidar3D::TLidarData newLidar3dData;
 
     // ## DATOS DE CONFIGURACION DE LOS LASERES
 
@@ -180,17 +181,33 @@ void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
 
     // ## DATOS DE LOS LÁSERES
 
+    int vertical_count = _msg.vertical_count(); // get the vertical scan count
+
     // Iterate through ranges array in _msg and create TData structs
     for (int i = 0; i < _msg.ranges_size(); i++)
     {
         RoboCompLaser::TData data;
         data.angle = _msg.angle_min() + i * _msg.angle_step();
         data.dist = _msg.ranges(i);
+
+        // Now let's add the data to TLidarData
+        RoboCompLidar3D::TPoint point;
+        point.x = data.dist * cos(data.angle);
+        point.y = data.dist * sin(data.angle);
+
+        // Calculate vertical angle and z coordinate
+        int vertical_index = i / vertical_count;        // calculate which vertical scan we're at
+        double vertical_angle = _msg.vertical_angle_min() + vertical_index * _msg.vertical_angle_step();
+        point.z = data.dist * sin(vertical_angle);      // z is the vertical component
+
+        point.intensity = _msg.intensities(i);
+
         newLaserData.push_back(data);
     }
 
     laserData = newLaserData;
     laserDataConf = newLaserConfData;
+    lidar3dData = newLidar3dData;
 }
 
 /**
@@ -434,8 +451,22 @@ RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserData()
 
 RoboCompLidar3D::TLidarData SpecificWorker::Lidar3D_getLidarData(int start, int len)
 {
-//implementCODE
+    RoboCompLidar3D::TLidarData filteredData;
 
+    double startRadians = start * M_PI / 180.0; // Convert to radians
+    double lenRadians = len * M_PI / 180.0; // Convert to radians
+
+    for (int i = 0; i < lidar3dData.size(); i++)
+    {
+
+        double angle = atan2(lidar3dData[i].y, lidar3dData[i].x); // Calculate angle in radians
+        if (angle >= startRadians && angle <= (startRadians + lenRadians))
+        {
+            filteredData.push_back(lidar3dData[i]);
+        }
+    }
+
+    return filteredData;
 }
 
 #pragma endregion LIDAR

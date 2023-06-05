@@ -33,6 +33,7 @@
 #include <innermodel/innermodel.h>
 #include <fps/fps.h>
 #include <string>
+#include <cmath>
 
 #include "topics.h"
 
@@ -143,6 +144,9 @@ class SpecificWorker : public GenericWorker
         // Laser
         RoboCompLaser::TLaserData laserData;
         RoboCompLaser::LaserConfData laserDataConf;
+
+        // Lidar3d
+        RoboCompLidar3D::TLidarData lidar3dData;
 
         // Odometer
         RoboCompGenericBase::TBaseState odometryTargetState;
