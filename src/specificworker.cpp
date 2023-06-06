@@ -18,11 +18,10 @@
  */
 #include "specificworker.h"
 
-
 using namespace std;
 using namespace gz;
 
-gz::transport::Node SpecificWorker::node;
+//gz::transport::Node SpecificWorker::node;
 
 /**
 * \brief Default constructor
@@ -49,11 +48,9 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 	return true;
 }
 
-
 void SpecificWorker::initialize(int period)
 {
     #pragma region Robocomp
-
 
 	std::cout << "Initialize worker" << std::endl;
 	this->Period = period;
@@ -195,6 +192,7 @@ void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
         point.x = data.dist * cos(data.angle);
         point.y = data.dist * sin(data.angle);
 
+        //TODO: Esta conversión no es correcta, no se exactamente cual es el eje que falla pero la visualización no es la que debería.
         // Calculate vertical angle and z coordinate
         int vertical_index = i / vertical_count;        // calculate which vertical scan we're at
         double vertical_angle = _msg.vertical_angle_min() + vertical_index * _msg.vertical_angle_step();
@@ -202,7 +200,16 @@ void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
 
         point.intensity = _msg.intensities(i);
 
+        newLidar3dData.push_back(point);
         newLaserData.push_back(data);
+
+        /*
+        // Point information debug
+        cout << "Point:" << endl;
+        cout << "X:" << point.x << endl;
+        cout << "Y:" << point.y << endl;
+        cout << "Z:" << point.z << endl;
+         */
     }
 
     laserData = newLaserData;
@@ -456,6 +463,8 @@ RoboCompLidar3D::TLidarData SpecificWorker::Lidar3D_getLidarData(int start, int 
     double startRadians = start * M_PI / 180.0; // Convert to radians
     double lenRadians = len * M_PI / 180.0; // Convert to radians
 
+    // TODO: El filtro no está funcionando correctamente.
+    /*
     for (int i = 0; i < lidar3dData.size(); i++)
     {
 
@@ -466,7 +475,11 @@ RoboCompLidar3D::TLidarData SpecificWorker::Lidar3D_getLidarData(int start, int 
         }
     }
 
+    cout << "getLidarData: lidar3dfilteredData size:" << filteredData.size() << endl;
+
     return filteredData;
+     */
+    return lidar3dData;
 }
 
 #pragma endregion LIDAR

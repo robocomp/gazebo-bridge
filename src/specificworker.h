@@ -30,11 +30,9 @@
 #define SPECIFICWORKER_H
 
 #include <genericworker.h>
-#include <innermodel/innermodel.h>
 #include <fps/fps.h>
 #include <string>
 #include <cmath>
-
 #include "topics.h"
 
 // Gazebo
@@ -55,8 +53,8 @@ class SpecificWorker : public GenericWorker
         RoboCompCameraRGBDSimple::TImage CameraRGBDSimple_getImage(std::string camera);
         RoboCompCameraRGBDSimple::TPoints CameraRGBDSimple_getPoints(std::string camera){};
 
-	// Camera 360 RGB
-	RoboCompCameraRGBDSimple::TImage Camera360RGB_getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight);
+	    // Camera 360 RGB
+	    RoboCompCameraRGBDSimple::TImage Camera360RGB_getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight);
 
         // LIDAR
         RoboCompLaser::TLaserData Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState);
@@ -106,21 +104,21 @@ class SpecificWorker : public GenericWorker
         void Gazebo2Robocomp_createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius);
         void Gazebo2Robocomp_removeEntity(std::string name);
         void Gazebo2Robocomp_setEntityPose(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation);
-	RoboCompGazebo2Robocomp::Vector3 Gazebo2Robocomp_getWorldPosition(std::string name);
-	void Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity);
+	    RoboCompGazebo2Robocomp::Vector3 Gazebo2Robocomp_getWorldPosition(std::string name);
+	    void Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity);
 
-	// LIDAR 3D
-	RoboCompLidar3D::TLidarData Lidar3D_getLidarData(int start, int len);
+        // LIDAR 3D
+        RoboCompLidar3D::TLidarData Lidar3D_getLidarData(int start, int len);
 
-    // JOYSTICK
-    void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
+        // JOYSTICK
+        void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
 
-    // Gazebo Transport client
-    static gz::transport::Node node;
+        // Gazebo Transport client
+        gz::transport::Node node;
 
-    // Data structure for the object data tracking funcionality.
-    struct ObjectData{
-        RoboCompGazebo2Robocomp::Vector3 position;
+        // Data structure for the object data tracking funcionality.
+        struct ObjectData{
+            RoboCompGazebo2Robocomp::Vector3 position;
     };
 
     public slots:
@@ -129,7 +127,6 @@ class SpecificWorker : public GenericWorker
         void initialize(int period);
 
     private:
-        std::shared_ptr < InnerModel > innerModel;
         bool startup_check_flag;
         FPSCounter fps;
 
