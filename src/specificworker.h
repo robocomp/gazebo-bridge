@@ -30,10 +30,9 @@
 #define SPECIFICWORKER_H
 
 #include <genericworker.h>
-#include <innermodel/innermodel.h>
 #include <fps/fps.h>
 #include <string>
-
+#include <cmath>
 #include "topics.h"
 
 // Gazebo
@@ -53,6 +52,9 @@ class SpecificWorker : public GenericWorker
         RoboCompCameraRGBDSimple::TDepth CameraRGBDSimple_getDepth(std::string camera);
         RoboCompCameraRGBDSimple::TImage CameraRGBDSimple_getImage(std::string camera);
         RoboCompCameraRGBDSimple::TPoints CameraRGBDSimple_getPoints(std::string camera){};
+
+	    // Camera 360 RGB
+	    RoboCompCameraRGBDSimple::TImage Camera360RGB_getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight);
 
         // LIDAR
         RoboCompLaser::TLaserData Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState);
@@ -102,12 +104,22 @@ class SpecificWorker : public GenericWorker
         void Gazebo2Robocomp_createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius);
         void Gazebo2Robocomp_removeEntity(std::string name);
         void Gazebo2Robocomp_setEntityPose(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation);
+	    RoboCompGazebo2Robocomp::Vector3 Gazebo2Robocomp_getWorldPosition(std::string name);
+	    void Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity);
+
+        // LIDAR 3D
+        RoboCompLidar3D::TLidarData Lidar3D_getLidarData(int start, int len);
 
         // JOYSTICK
         void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
 
         // Gazebo Transport client
-        static gz::transport::Node node;
+        gz::transport::Node node;
+
+        // Data structure for the object data tracking funcionality.
+        struct ObjectData{
+            RoboCompGazebo2Robocomp::Vector3 position;
+    };
 
     public slots:
         void compute();
@@ -115,7 +127,6 @@ class SpecificWorker : public GenericWorker
         void initialize(int period);
 
     private:
-        std::shared_ptr < InnerModel > innerModel;
         bool startup_check_flag;
         FPSCounter fps;
 
@@ -131,6 +142,9 @@ class SpecificWorker : public GenericWorker
         RoboCompLaser::TLaserData laserData;
         RoboCompLaser::LaserConfData laserDataConf;
 
+        // Lidar3d
+        RoboCompLidar3D::TLidarData lidar3dData;
+
         // Odometer
         RoboCompGenericBase::TBaseState odometryTargetState;
         string completeOdometryTopic;
@@ -143,16 +157,26 @@ class SpecificWorker : public GenericWorker
         RoboCompIMU::Magnetic imuMagneticFields;
         RoboCompIMU::Orientation imuOrientation;
 
-        // Callbacks functions
+        // Callbacks functions for sensors
         void depth_camera_cb(const gz::msgs::Image &_msg);
         void lidar_cb(const gz::msgs::LaserScan &_msg);
         void camera_cb(const gz::msgs::Image &_msg);
         void odometry_cb(const gz::msgs::Odometry &_msg);
         void imu_cb(const gz::msgs::IMU &_msg);
 
+        // Objects for the object data tracking
+        std::map<std::string, shared_ptr<ObjectData>> objectsData;
+        void trackObject(const std::string& objectName);
+        void trackObject_cb(const gz::msgs::Pose &_msg);
+
+
 
         // Auxiliar functions
         void printNotImplementedWarningMessage(string functionName);
+        // Checks if an object is being tracked
+        bool isTracking(const std::string& objectName) {
+            return objectsData.count(objectName) > 0;
+        }
 };
 
 #endif

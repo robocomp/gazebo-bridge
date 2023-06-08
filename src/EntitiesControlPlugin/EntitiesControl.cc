@@ -5,128 +5,323 @@
 // Important to include the plugin's header.
 #include "EntitiesControl.hh"
 
-// This is required to register the plugin. Make sure the interfaces match
-// what's in the header.
-GZ_ADD_PLUGIN(
-        entities_control::EntitiesControl,
-        gz::sim::System,
-        entities_control::EntitiesControl::ISystemConfigure,
-        entities_control::EntitiesControl::ISystemPostUpdate,
-        entities_control::EntitiesControl::ISystemPreUpdate)
-
 using namespace gz;
 using namespace sim;
 using namespace systems;
 using namespace std;
 
-using namespace entities_control;
 
-EntitiesControl::EntitiesControl()
-{
+EntitiesControl::EntitiesControl(): System(), dataPtr(std::make_unique<EntitiesControlPrivate>()){
 }
 
+EntitiesControl::~EntitiesControl() = default;
+
+
+class EntitiesControlInterface{
+
+public:
+    /// Pointer to entity component manager. We don't assume ownership.
+    EntityComponentManager *ecm{nullptr};
+
+    /// \brief Creator interface, shared among all commands that need it.
+    std::unique_ptr<SdfEntityCreator> creator{nullptr};
+
+    /// \brief World entity.
+    Entity worldEntity{kNullEntity};
+
+};
+
+class EntitiesControlCommandBase {
+
+public:
+    /// \brief Constructor
+    /// \param[in] _msg Message containing user command.
+    /// \param[in] _iface Pointer to interfaces shared by all commands.
+    /// \param[in] _publisher Publisher for topics that need to be published.
+    EntitiesControlCommandBase(google::protobuf::Message *_msg,
+    std::shared_ptr<EntitiesControlInterface> &_iface,
+    gz::transport::Node::Publisher &_publisher) : msg(_msg), iface(_iface), publisher(_publisher) {};
+
+    /// \brief Constructor
+    /// \param[in] _msg Message containing user command.
+    /// \param[in] _iface Pointer to interfaces shared by all commands.
+    EntitiesControlCommandBase(google::protobuf::Message *_msg,
+                               std::shared_ptr<EntitiesControlInterface> &_iface) : msg(_msg), iface(_iface) {};
+
+    /// \brief Destructor.
+    virtual ~EntitiesControlCommandBase(){
+        if (this->msg != nullptr)
+            delete this->msg;
+        this->msg = nullptr;
+    };
+
+    /// \brief Execute the command. All subclasses must implement this
+    /// function and update entities and components so the command takes effect.
+    /// \return True if command was properly executed.
+    virtual bool Execute() = 0;
+
+protected:
+
+    /// \brief Message containing command.
+    google::protobuf::Message *msg{nullptr};
+
+    /// \brief Keep pointer to interfaces shared among commands.
+    const std::shared_ptr<EntitiesControlInterface> iface{nullptr};
+
+    /// \brief Publisher instance for the topic
+    gz::transport::Node::Publisher publisher;
+};
+
+class GetGlobalPositionCommand : public EntitiesControlCommandBase{
+public:
+
+    /// \brief Constructor
+    /// \param[in] _msg Message identifying the entity to be removed.
+    /// \param[in] _iface Pointer to user commands interface.
+    GetGlobalPositionCommand(msgs::Pose *_msg,
+        std::shared_ptr<EntitiesControlInterface> &_iface,
+        gz::transport::Node::Publisher &_publisher) : EntitiesControlCommandBase(_msg, _iface, _publisher) {};
+
+    // Inherited
+    bool Execute() final{
+
+        // Casting the general message to the specific one that use this command.
+        auto getGlobalPositionMsg = dynamic_cast<const msgs::Pose *>(this->msg);
+        if (nullptr == getGlobalPositionMsg)
+        {
+            gzerr << "Internal error, null create message" << std::endl;
+            return false;
+        }
+
+        string targetName = getGlobalPositionMsg->name();
+
+        // Get global position from name in the message.
+        const Entity targetEntity = this->iface->ecm->EntityByComponents(components::Name(targetName), components::Model());
+
+        Entity targetLink;
+        for(auto link : this->iface->ecm->ChildrenByComponents(targetEntity, components::Link())){
+            targetLink = link;
+        }
+
+        //Construct new message to publish.
+        auto msg = msgs::Pose();
+        msg.set_name(targetName);
+
+        // Getting the world pose of the link
+        gz::math::Pose3d targetPose = gz::sim::worldPose(targetLink, *this->iface->ecm);
+
+        msgs::Vector3d *position = msg.mutable_position();
+        position->set_x(targetPose.Pos().X());
+        position->set_y(targetPose.Pos().Y());
+        position->set_z(targetPose.Pos().Z());
+
+
+        // Publishing new information to the topic.
+        publisher.Publish(msg);
+
+        return true;
+    };
+};
+
+class SetLinkLinearVelocityCommand : public EntitiesControlCommandBase{
+public:
+
+    /// \brief Constructor
+    /// \param[in] _msg Message identifying the entity to be removed.
+    /// \param[in] _iface Pointer to user commands interface.
+    SetLinkLinearVelocityCommand(msgs::Pose *_msg,
+                             std::shared_ptr<EntitiesControlInterface> &_iface) : EntitiesControlCommandBase(_msg, _iface) {};
+
+    // Inherited
+    bool Execute() final{
+
+        // Casting the general message to the specific one that use this command.
+        auto commandMsg = dynamic_cast<const msgs::Pose *>(this->msg);
+        if (nullptr == commandMsg)
+        {
+            gzerr << "Internal error, null create message" << std::endl;
+            return false;
+        }
+
+        string targetName = commandMsg->name();
+
+        Entity entity = this->iface->ecm->EntityByComponents(components::Name(targetName), components::Link());
+
+        // Check if exists an entity with the given parameters.
+        if (!entity){
+            gzerr << "[" << HEADER_NAME << "] Link not found." << endl;
+            return false;
+        }
+
+        const gz::math::Vector3d& linearVelocity = gz::math::Vector3d(commandMsg->position().x(), commandMsg->position().y(), commandMsg->position().z());
+
+        Link link(entity);
+
+        if(link.Valid(*this->iface->ecm)){
+
+            link.SetLinearVelocity(*this->iface->ecm, linearVelocity);
+            return true;
+        }
+        else
+            return false;
+
+    };
+};
+
+/// \brief Private EntitiesControl data class.
+class gz::sim::systems::EntitiesControlPrivate{
+public:
+
+    bool GetWorldPositionService(const msgs::StringMsg &_req,
+                           msgs::Boolean &_res);
+
+    bool SetLinkLinearVelocityService(const msgs::Pose &_req,
+                                 msgs::Boolean &_res);
+
+    /// \brief Flag used for initialization settings in PreUpdate.
+    bool initialized{false};
+
+    /// \brief Queue of commands pending execution.
+    std::vector<std::unique_ptr<EntitiesControlCommandBase>> pendingCmds;
+
+    /// \brief Gazebo communication node.
+    transport::Node node;
+
+    /// \brief Object holding several interfaces that can be used by any command.
+    std::shared_ptr<EntitiesControlInterface> iface{nullptr};
+};
 
 #pragma region Gazebo Execution Flow
+
 //////////////////////////////////////////////////
 void EntitiesControl::Configure(const gz::sim::Entity &_entity,
                                 const std::shared_ptr<const sdf::Element> &_sdf,
                                 gz::sim::EntityComponentManager &_ecm,
-                                gz::sim::EventManager &/*_eventMgr*/)
-{
-    // We save the .sdf and the ECSystem in memory for future use.
-    sdfConfig = _sdf->Clone();
-    ecm = &_ecm;
+                                gz::sim::EventManager &_eventManager) {
 
-    ///////////////////////////////////////////////////////
-    ////// CREATION OF SetLinkLinearVelocity SERVICE //////
-    ///////////////////////////////////////////////////////
 
-    // Getting the name of the world
-    const components::Name *constCmp = _ecm.Component<components::Name>(_entity);
-    const std::string &worldName = constCmp->Data();
+    // Create interfaces shared among commands
+    this->dataPtr->iface = std::make_shared<EntitiesControlInterface>();
+    this->dataPtr->iface->worldEntity = _entity;
+    this->dataPtr->iface->ecm = &_ecm;
+    this->dataPtr->iface->creator =
+            std::make_unique<SdfEntityCreator>(_ecm, _eventManager);
 
-    auto validWorldName = transport::TopicUtils::AsValidTopic(worldName);
-    if (validWorldName.empty())
-    {
-        gzerr << "World name [" << worldName
-              << "] doesn't work well with transport, services not advertised."
-              << std::endl;
-        return;
-    }
 
-    // Create service
-    std::string serviceName{"/world/" + validWorldName + "/set_link_linear_velocity"};
-    node.Advertise(serviceName, &EntitiesControl::SetLinkLinearVelocityService, this);
+   // Getting the world name
+   const components::Name *constCmp = _ecm.Component<components::Name>(_entity);
+   const std::string &worldName = constCmp->Data();
 
-    gzmsg << "[" << HEADER_NAME << "]" << " Service created: " << "[" << serviceName << "]" << std::endl;
+   auto validWorldName = transport::TopicUtils::AsValidTopic(worldName);
+   if (validWorldName.empty())
+   {
+       gzerr << "[" << HEADER_NAME << "] "
+             << "World name [" << worldName
+             << "] doesn't work well with transport, services not advertised."
+             << endl;
+       return;
+   }
 
-    ///////////////////////////////////////////////////////
+    // Creation of get_world_position service
+    std::string getWorldPositionService{"/world/" + validWorldName + "/get_world_position"};
+    this->dataPtr->node.Advertise(getWorldPositionService,
+                                  &EntitiesControlPrivate::GetWorldPositionService, this->dataPtr.get());
+
+    gzmsg << "Get World Position service on [" << getWorldPositionService << "]" << endl;
+
+
+    // Creation of set_link_linear_velocity service
+    std::string setLinkLinearVelocityService{"/world/" + validWorldName + "/set_link_linear_velocity"};
+    this->dataPtr->node.Advertise(setLinkLinearVelocityService,
+                                  &EntitiesControlPrivate::SetLinkLinearVelocityService, this->dataPtr.get());
+
+    gzmsg << "Set Linear Velocity service on [" << setLinkLinearVelocityService << "]" << endl;
+
 
     // Status Message
-    gzmsg << "[" << HEADER_NAME << "] Configured." << endl;
-}
-
-//////////////////////////////////////////////////
-// Here we implement the PostUpdate function, which is called at every iteration.
-void EntitiesControl::PostUpdate(const gz::sim::UpdateInfo &_info,
-                                 const gz::sim::EntityComponentManager &/*_ecm*/)
-{
+    gzmsg << "[" << HEADER_NAME << "] Configured." << std::endl;
 
 }
 
+//////////////////////////////////////////////////////////////
 void EntitiesControl::PreUpdate(
         const gz::sim::UpdateInfo &_info,
-        gz::sim::EntityComponentManager &_ecm)
-{
-    // Initialization settings
-    if (!initialized)
-    {
-        // We call Load here instead of Configure because we can't be guaranteed
-        // that all entities have been created when Configure is called
-        Load(_ecm, sdfConfig);
+        gz::sim::EntityComponentManager &_ecm) {
 
-        initialized = true;
+
+    // Checking if we have topics to publish. If not, the execution ends here.
+    if(this->dataPtr->pendingCmds.empty())
+        return;
+
+    // Publishing in topics.
+    for (auto &cmd : this->dataPtr->pendingCmds) {
+        // Execute
+        if (!cmd->Execute())
+            continue;
     }
 
-    //SetLinkLinearVelocity(const_cast<EntityComponentManager &>(_ecm), sdfConfig, "link_robocomp", gz::math::Vector3d(0.0, -1.0, 0.0));
 }
 
+//////////////////////////////////////////////////////////////
 #pragma endregion Gazebo Execution Flow
 
 
-void EntitiesControl::Load(const gz::sim::EntityComponentManager &_ecm,
-                             const sdf::ElementPtr &_sdf) {
-
-}
-
-void EntitiesControl::SetLinkLinearVelocity(EntityComponentManager& _ecm,
-                                              sdf::ElementPtr _sdf,
-                                              const std::string& _linkName,
-                                              const gz::math::Vector3d& _linearVelocity)
+bool EntitiesControlPrivate::GetWorldPositionService(const msgs::StringMsg &_req, msgs::Boolean &_res)
 {
-    Entity entity = _ecm.EntityByComponents(components::Name(_linkName));
+    Entity entity = this->iface->ecm->EntityByComponents(components::Name(_req.data()));
 
-    if (!entity)
+    // Check if exists an entity with the given parameters.
+    if(!entity)
+        return false;
+
+    auto topic = ("/model/" + _req.data() + "/get_world_position");
+
+    gz::transport::Node::Publisher getWorldPositionPub = node.Advertise<gz::msgs::Pose>(topic);
+
+    gz::msgs::Pose *msg = new gz::msgs::Pose();
+
+    // We establish the name of the model initially because it's the only thing that doesn't change in runtime.
+    msg->set_name(_req.data());
+
+    auto command = std::make_unique<GetGlobalPositionCommand>(msg, this->iface, getWorldPositionPub);
+    this->pendingCmds.push_back(std::move(command));
+
+    gzmsg << "[" << HEADER_NAME << "] Topic: " << topic << " created." << std::endl;
+
+    return true;
+}
+
+bool EntitiesControlPrivate::SetLinkLinearVelocityService(const msgs::Pose &_req, msgs::Boolean &_res)
+{
+    Entity entity = this->iface->ecm->EntityByComponents(components::Name(_req.name()), components::Link());
+
+    // Check if exists an entity with the given parameters.
+    if (!entity){
         gzerr << "[" << HEADER_NAME << "] Link not found." << endl;
+        return false;
+    }
 
-    Link link(entity);
+    gz::msgs::Pose *msg = new gz::msgs::Pose();
 
-    link.SetLinearVelocity(_ecm, _linearVelocity);
+    msg->set_name(_req.name());
+    msg->mutable_position()->set_x(_req.position().x());
+    msg->mutable_position()->set_y(_req.position().y());
+    msg->mutable_position()->set_z(_req.position().z());
+
+    auto command = std::make_unique<SetLinkLinearVelocityCommand>(msg, this->iface);
+    this->pendingCmds.push_back(std::move(command));
+
+    gzmsg << "[" << HEADER_NAME << "] set_link_linear_velocity service requested." << endl;
+    return true;
 }
 
-#pragma region Public Interfaces
 
-bool EntitiesControl::SetLinkLinearVelocityService(const gz::msgs::Pose &_req, gz::msgs::Boolean &_res){
+// This is required to register the plugin. Make sure the interfaces match
+// what's in the header.
+GZ_ADD_PLUGIN(
+        EntitiesControl,
+        System,
+        EntitiesControl::ISystemConfigure,
+        EntitiesControl::ISystemPreUpdate)
 
-    const std::string& linkName = _req.name();
-    const auto& vel = _req.position();
-    gz::math::Vector3<double> linearVelocity(vel.x(), vel.y(), vel.z());
-
-    // TODO: No es buen aproach llamar directamente a la función sin pasar por el flujo de ejecución de Gazebo,
-    // Probar con asignar atributos de clase y que las llamadas al método se hagan desde el PreUpdate
-    // Quizás la solución es que entre la llamada en una lista y el PreUpdate ejecute la lista.
-    // SetLinkLinearVelocity(*ecm, sdfConfig, linkName, linearVelocity);
-}
-
-#pragma endregion Public Interfaces
-
+GZ_ADD_PLUGIN_ALIAS(EntitiesControl, "gz::sim::systems::EntitiesControl")

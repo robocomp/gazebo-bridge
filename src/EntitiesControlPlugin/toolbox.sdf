@@ -9,8 +9,10 @@
       name="gz::sim::systems::SceneBroadcaster">
     </plugin>
     
-    <plugin filename="EntitiesControl" name="entities_control::EntitiesControl">
+    <plugin filename="EntitiesControl" name="gz::sim::v7::systems::EntitiesControl">
     </plugin>
+    
+    <plugin name='gz::sim::systems::UserCommands' filename='gz-sim-user-commands-system'/>
     
     <model name='ground_plane'>
       <static>true</static>
@@ -55,6 +57,14 @@
     <model name='box'>
       <pose>0 0 0.5 0 0 0</pose>
       <link name='link_robocomp'>
+      
+      	<sensor name="imu" type="imu">
+	        <topic>imu</topic>
+	        <always_on>true</always_on>
+	        <update_rate>100</update_rate>
+        	<visualize>true</visualize>
+      	</sensor>
+      
         <inertial>
           <inertia>
             <ixx>0.16666</ixx>

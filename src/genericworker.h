@@ -24,6 +24,7 @@
 #include <qlog/qlog.h>
 #include <CommonBehavior.h>
 
+#include <Camera360RGB.h>
 #include <CameraRGBDSimple.h>
 #include <DifferentialRobot.h>
 #include <Gazebo2Robocomp.h>
@@ -32,6 +33,7 @@
 #include <JointMotorSimple.h>
 #include <JoystickAdapter.h>
 #include <Laser.h>
+#include <Lidar3D.h>
 #include <OmniRobot.h>
 
 
@@ -56,6 +58,7 @@ public:
 
 
 
+	virtual RoboCompCameraRGBDSimple::TImage Camera360RGB_getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight) = 0;
 	virtual RoboCompCameraRGBDSimple::TRGBD CameraRGBDSimple_getAll(std::string camera) = 0;
 	virtual RoboCompCameraRGBDSimple::TDepth CameraRGBDSimple_getDepth(std::string camera) = 0;
 	virtual RoboCompCameraRGBDSimple::TImage CameraRGBDSimple_getImage(std::string camera) = 0;
@@ -73,8 +76,10 @@ public:
 	virtual void Gazebo2Robocomp_createCylinderEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius) = 0;
 	virtual void Gazebo2Robocomp_createEntity(std::string sdf) = 0;
 	virtual void Gazebo2Robocomp_createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius) = 0;
+	virtual RoboCompGazebo2Robocomp::Vector3 Gazebo2Robocomp_getWorldPosition(std::string name) = 0;
 	virtual void Gazebo2Robocomp_removeEntity(std::string name) = 0;
 	virtual void Gazebo2Robocomp_setEntityPose(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation) = 0;
+	virtual void Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity) = 0;
 	virtual RoboCompIMU::Acceleration IMU_getAcceleration() = 0;
 	virtual RoboCompIMU::Gyroscope IMU_getAngularVel() = 0;
 	virtual RoboCompIMU::DataImu IMU_getDataImu() = 0;
@@ -89,6 +94,7 @@ public:
 	virtual RoboCompLaser::TLaserData Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState) = 0;
 	virtual RoboCompLaser::LaserConfData Laser_getLaserConfData() = 0;
 	virtual RoboCompLaser::TLaserData Laser_getLaserData() = 0;
+	virtual RoboCompLidar3D::TLidarData Lidar3D_getLidarData(int start, int len) = 0;
 	virtual void OmniRobot_correctOdometer(int x, int z, float alpha) = 0;
 	virtual void OmniRobot_getBasePose(int &x, int &z, float &alpha) = 0;
 	virtual void OmniRobot_getBaseState(RoboCompGenericBase::TBaseState &state) = 0;

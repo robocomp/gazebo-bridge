@@ -120,16 +120,17 @@ system of topics using gz-transport, the topics linked to each supported
 component are the following:
 </p>
 
-| Robocomp Component |   Gazebo sensor or plugin |                                       Topic |
-|--------------------|:-------------------------:|--------------------------------------------:|
-| CameraRGBDSimple   |           camera          |                                     /camera |
-| CameraRGBDSimple   |        depth_camera       |                               /depth_camera |
-| Laser              |          gpu_lidar        |                                      /lidar |
-| IMU                |             imu           |                                        /imu |
-| JointMotorSimple   |          DiffDrive        |                                    /cmd_vel |
-| JoystickAdapter    |          DiffDrive        |                                    /cmd_vel |
-| OmniRobot          |       model/odometer      |  /model/ + odometry_target_name + /odometry |
-| DifferentialRobot  |       model/odometer      |  /model/ + odometry_target_name + /odometry |
+| Robocomp Component | Gazebo sensor or plugin |                                      Topic |
+|--------------------|:-----------------------:|-------------------------------------------:|
+| CameraRGBDSimple   |         camera          |                                    /camera |
+| CameraRGBDSimple   |      depth_camera       |                              /depth_camera |
+| Laser              |        gpu_lidar        |                                     /lidar |
+| IMU                |           imu           |                                       /imu |
+| JointMotorSimple   |        DiffDrive        |                                   /cmd_vel |
+| JoystickAdapter    |        DiffDrive        |                                   /cmd_vel |
+| OmniRobot          |     model/odometer      | /model/ + odometry_target_name + /odometry |
+| DifferentialRobot  |     model/odometer      | /model/ + odometry_target_name + /odometry |
+| Lidar3D            |        gpu_lidar        |                                    /lidar  |
 
 
 ## Example Usage
@@ -192,13 +193,14 @@ Currently the supported services are the following:
 </p>
 
 
-| Gazebo2Robocomp Interface                                                                                                | Gazebo sensor or plugin |                                 Service |
-|--------------------------------------------------------------------------------------------------------------------------|:-----------------------:|----------------------------------------:|
-| <strong>CreateBoxEntity</strong>                    |       UserCommand       |   /world/ + gazebo_world_name + /create |
-| <strong>CreateCapsuleEntity</strong>  |       UserCommand       |   /world/ + gazebo_world_name + /create |
-| <strong>CreateCylinderEntity</strong> |       UserCommand       |   /world/ + gazebo_world_name + /create |
-| <strong>CreateSphereEntity</strong>                                                                                      |       UserCommand       |   /world/ + gazebo_world_name + /create |
-| <strong>RemoveEntity</strong>                                                                                            |       UserCommand       |   /world/ + gazebo_world_name + /remove |
-| <strong>SetEntityPose</strong>                                                                                           |       UserCommand       | /world/ + gazebo_world_name + /set_pose |
-
+| Gazebo2Robocomp Interface | Gazebo sensor or plugin |                                            Service |
+|---------------------------|:-----------------------:|---------------------------------------------------:|
+| `CreateBoxEntity`         |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateCapsuleEntity`     |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateCylinderEntity`    |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateSphereEntity`      |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `RemoveEntity`            |       UserCommand       |              /world/ + gazebo_world_name + /remove |
+| `SetEntityPose`           |       UserCommand       |            /world/ + gazebo_world_name + /set_pose |
+| `GetWorldPosition`        |     EntitiesControl     |  /world/ + gazebo_world_name + /get_world_position |
+| `SetLinearVelocity`       |   EntitiesControl       | /world/ + gazebo_world_name + /set_linear_velocity |
 

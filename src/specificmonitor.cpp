@@ -94,6 +94,7 @@ void SpecificMonitor::readConfig(RoboCompCommonBehavior::ParameterList &params )
 
     configGetString( "","gazebo_world_name", aux.value, "none");
     params["gazebo_world_name"] = aux;
+
 }
 
 //Check parameters and transform them to worker structure

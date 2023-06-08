@@ -8,8 +8,8 @@ JointMotorSimple.Endpoints=tcp -p 10006
 DifferentialRobot.Endpoints=tcp -p 10007
 OmniRobot.Endpoints=tcp -p 10004
 Gazebo2Robocomp.Endpoints=tcp -p 10008
-
-
+Lidar3D.Endpoints=tcp -p 10009
+Camera360RGB.Endpoints=tcp -p 10010
 
 # Endpoints for subscriptions interfaces
 JoystickAdapterTopic.Endpoints=tcp -p 11025
@@ -21,7 +21,7 @@ TopicManager.Proxy=IceStorm/TopicManager:default -p 9999
 InnerModelPath = innermodel.xml
 
 # Custom parameters
-odometry_target_name = None
+odometry_target_name = none
 gazebo_world_name = shapes
 
 Ice.Warn.Connections=0

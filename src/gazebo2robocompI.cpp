@@ -54,6 +54,11 @@ void Gazebo2RobocompI::createSphereEntity(std::string name, RoboCompGazebo2Roboc
 	worker->Gazebo2Robocomp_createSphereEntity(name, position, orientation, radius);
 }
 
+RoboCompGazebo2Robocomp::Vector3 Gazebo2RobocompI::getWorldPosition(std::string name, const Ice::Current&)
+{
+	return worker->Gazebo2Robocomp_getWorldPosition(name);
+}
+
 void Gazebo2RobocompI::removeEntity(std::string name, const Ice::Current&)
 {
 	worker->Gazebo2Robocomp_removeEntity(name);
@@ -62,5 +67,10 @@ void Gazebo2RobocompI::removeEntity(std::string name, const Ice::Current&)
 void Gazebo2RobocompI::setEntityPose(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, const Ice::Current&)
 {
 	worker->Gazebo2Robocomp_setEntityPose(name, position, orientation);
+}
+
+void Gazebo2RobocompI::setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity, const Ice::Current&)
+{
+	worker->Gazebo2Robocomp_setLinearVelocity(name, velocity);
 }
 

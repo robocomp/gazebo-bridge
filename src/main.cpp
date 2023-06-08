@@ -81,12 +81,14 @@
 #include "specificmonitor.h"
 #include "commonbehaviorI.h"
 
+#include <camera360rgbI.h>
 #include <camerargbdsimpleI.h>
 #include <differentialrobotI.h>
 #include <gazebo2robocompI.h>
 #include <imuI.h>
 #include <jointmotorsimpleI.h>
 #include <laserI.h>
+#include <lidar3dI.h>
 #include <omnirobotI.h>
 #include <joystickadapterI.h>
 
@@ -201,6 +203,24 @@ int ::Gazebo2Robocomp::run(int argc, char* argv[])
 		try
 		{
 			// Server adapter creation and publication
+			if (not GenericMonitor::configGetString(communicator(), prefix, "Camera360RGB.Endpoints", tmp, ""))
+			{
+				cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy Camera360RGB";
+			}
+			Ice::ObjectAdapterPtr adapterCamera360RGB = communicator()->createObjectAdapterWithEndpoints("Camera360RGB", tmp);
+			auto camera360rgb = std::make_shared<Camera360RGBI>(worker);
+			adapterCamera360RGB->add(camera360rgb, Ice::stringToIdentity("camera360rgb"));
+			adapterCamera360RGB->activate();
+			cout << "[" << PROGRAM_NAME << "]: Camera360RGB adapter created in port " << tmp << endl;
+		}
+		catch (const IceStorm::TopicExists&){
+			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for Camera360RGB\n";
+		}
+
+
+		try
+		{
+			// Server adapter creation and publication
 			if (not GenericMonitor::configGetString(communicator(), prefix, "CameraRGBDSimple.Endpoints", tmp, ""))
 			{
 				cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy CameraRGBDSimple";
@@ -232,6 +252,7 @@ int ::Gazebo2Robocomp::run(int argc, char* argv[])
 		catch (const IceStorm::TopicExists&){
 			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for DifferentialRobot\n";
 		}
+
 
 		try
 		{
@@ -302,6 +323,24 @@ int ::Gazebo2Robocomp::run(int argc, char* argv[])
 		}
 		catch (const IceStorm::TopicExists&){
 			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for Laser\n";
+		}
+
+
+		try
+		{
+			// Server adapter creation and publication
+			if (not GenericMonitor::configGetString(communicator(), prefix, "Lidar3D.Endpoints", tmp, ""))
+			{
+				cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy Lidar3D";
+			}
+			Ice::ObjectAdapterPtr adapterLidar3D = communicator()->createObjectAdapterWithEndpoints("Lidar3D", tmp);
+			auto lidar3d = std::make_shared<Lidar3DI>(worker);
+			adapterLidar3D->add(lidar3d, Ice::stringToIdentity("lidar3d"));
+			adapterLidar3D->activate();
+			cout << "[" << PROGRAM_NAME << "]: Lidar3D adapter created in port " << tmp << endl;
+		}
+		catch (const IceStorm::TopicExists&){
+			cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for Lidar3D\n";
 		}
 
 
