@@ -107,8 +107,8 @@ void SpecificWorker::initialize(int period)
 
 void SpecificWorker::compute()
 {
-    // DEBUG: LIDAR
     /*
+    // DEBUG: LIDAR
     std::cout << "Laser Data:" << std::endl;
     for (const auto& data : laserData)
     {
@@ -170,21 +170,18 @@ void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
     RoboCompLidar3D::TLidarData newLidar3dData;
 
     // ## DATOS DE CONFIGURACION DE LOS LASERES
-
     newLaserConfData.maxDegrees = _msg.angle_max();
     newLaserConfData.maxRange = _msg.range_max();
     newLaserConfData.minRange = _msg.range_min();
     newLaserConfData.angleRes = _msg.angle_step();
 
     // ## DATOS DE LOS LÁSERES
-
     int vertical_count = _msg.vertical_count(); // get the vertical scan count
     int horizontal_count = _msg.count(); // get the horizontal
 
+    // ## RECORRIDO DE LOS LASERES Y CONVERSION A X, Y, Z.
     int verticalIndexChangeFlag = -1;       // This flag is used to indicate the change in the vertical index of the lidar scan.
     int horizontal_index = 0;
-
-
     // Iterate through ranges array in _msg and create TData structs
     for (int i = 0; i < _msg.ranges_size(); i++)
     {
@@ -199,11 +196,12 @@ void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
         float horizontal_angle = _msg.angle_min() + horizontal_index * _msg.angle_step();
         float vertical_angle = _msg.vertical_angle_min() + vertical_index * _msg.vertical_angle_step();
 
+        // In TData we only need to Laser Data of the first horizontal line.
         RoboCompLaser::TData data;
         data.angle = horizontal_angle;  // Horizontal angle
         data.dist = _msg.ranges(i);
 
-        // Now let's add the data to TLidarData
+        // Now let's add the 3d lidar data to TLidarData
         RoboCompLidar3D::TPoint point;
         point.x = data.dist * cos(horizontal_angle) * cos(vertical_angle);
         point.y = data.dist * sin(horizontal_angle) * cos(vertical_angle);
@@ -217,6 +215,7 @@ void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
         horizontal_index++;
     }
 
+    // Setting the shared attributes values.
     laserData = newLaserData;
     laserDataConf = newLaserConfData;
     lidar3dData = newLidar3dData;
@@ -301,12 +300,12 @@ void SpecificWorker::imu_cb(const gz::msgs::IMU &_msg)
     newOrientation.Yaw = _msg.orientation().z();
     imuOrientation = newOrientation;
 
-    // Magnetic field
-    RoboCompIMU::Magnetic newMagneticFields;
     // TODO: Recoger datos del sensor magnetico
-    //newMagneticFields.XMag = ;
-    //newMagneticFields.YMag = ;
-    //newMagneticFields.ZMag = ;
+    // Magnetic field
+    //RoboCompIMU::Magnetic newMagneticFields;
+    //newMagneticFields.XMag = ??? ;
+    //newMagneticFields.YMag = ??? ;
+    //newMagneticFields.ZMag = ??? ;
 
     // IMU Data
     imuDataImu.acc = newAcceleration;
@@ -344,8 +343,7 @@ RoboCompCameraRGBDSimple::TImage SpecificWorker::CameraRGBDSimple_getImage(std::
 
 RoboCompCameraRGBDSimple::TImage SpecificWorker::Camera360RGB_getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight)
 {
-//implementCODE
-
+    printNotImplementedWarningMessage("Camera360RGB_getROI");
 }
 
 #pragma endregion SimpleCameraRGBD
