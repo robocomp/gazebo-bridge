@@ -120,16 +120,17 @@ system of topics using gz-transport, the topics linked to each supported
 component are the following:
 </p>
 
-| Robocomp Component |   Gazebo sensor or plugin |                                       Topic |
-|--------------------|:-------------------------:|--------------------------------------------:|
-| CameraRGBDSimple   |           camera          |                                     /camera |
-| CameraRGBDSimple   |        depth_camera       |                               /depth_camera |
-| Laser              |          gpu_lidar        |                                      /lidar |
-| IMU                |             imu           |                                        /imu |
-| JointMotorSimple   |          DiffDrive        |                                    /cmd_vel |
-| JoystickAdapter    |          DiffDrive        |                                    /cmd_vel |
-| OmniRobot          |       model/odometer      |  /model/ + odometry_target_name + /odometry |
-| DifferentialRobot  |       model/odometer      |  /model/ + odometry_target_name + /odometry |
+| Robocomp Component | Gazebo sensor or plugin |                                      Topic |
+|--------------------|:-----------------------:|-------------------------------------------:|
+| CameraRGBDSimple   |         camera          |                                    /camera |
+| CameraRGBDSimple   |      depth_camera       |                              /depth_camera |
+| Laser              |        gpu_lidar        |                                     /lidar |
+| IMU                |           imu           |                                       /imu |
+| JointMotorSimple   |        DiffDrive        |                                   /cmd_vel |
+| JoystickAdapter    |        DiffDrive        |                                   /cmd_vel |
+| OmniRobot          |     model/odometer      | /model/ + odometry_target_name + /odometry |
+| DifferentialRobot  |     model/odometer      | /model/ + odometry_target_name + /odometry |
+| Lidar3D            |        gpu_lidar        |                                    /lidar  |
 
 
 ## Example Usage
