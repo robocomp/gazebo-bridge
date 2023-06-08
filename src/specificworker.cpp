@@ -179,37 +179,42 @@ void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
     // ## DATOS DE LOS LÁSERES
 
     int vertical_count = _msg.vertical_count(); // get the vertical scan count
+    int horizontal_count = _msg.count(); // get the horizontal
+
+    int verticalIndexChangeFlag = -1;       // This flag is used to indicate the change in the vertical index of the lidar scan.
+    int horizontal_index = 0;
+
 
     // Iterate through ranges array in _msg and create TData structs
     for (int i = 0; i < _msg.ranges_size(); i++)
     {
+        int vertical_index = i / horizontal_count;        // calculate which vertical scan we're at
+
+        // In each vertical index change we need to reset the horizontal index.
+        if(vertical_index != verticalIndexChangeFlag){
+            verticalIndexChangeFlag = vertical_index;
+            horizontal_index = 0;
+        }
+
+        float horizontal_angle = _msg.angle_min() + horizontal_index * _msg.angle_step();
+        float vertical_angle = _msg.vertical_angle_min() + vertical_index * _msg.vertical_angle_step();
+
         RoboCompLaser::TData data;
-        data.angle = _msg.angle_min() + i * _msg.angle_step();
+        data.angle = horizontal_angle;  // Horizontal angle
         data.dist = _msg.ranges(i);
 
         // Now let's add the data to TLidarData
         RoboCompLidar3D::TPoint point;
-        point.x = data.dist * cos(data.angle);
-        point.y = data.dist * sin(data.angle);
-
-        //TODO: Esta conversión no es correcta, no se exactamente cual es el eje que falla pero la visualización no es la que debería.
-        // Calculate vertical angle and z coordinate
-        int vertical_index = i / vertical_count;        // calculate which vertical scan we're at
-        double vertical_angle = _msg.vertical_angle_min() + vertical_index * _msg.vertical_angle_step();
+        point.x = data.dist * cos(horizontal_angle) * cos(vertical_angle);
+        point.y = data.dist * sin(horizontal_angle) * cos(vertical_angle);
         point.z = data.dist * sin(vertical_angle);      // z is the vertical component
-
         point.intensity = _msg.intensities(i);
 
         newLidar3dData.push_back(point);
         newLaserData.push_back(data);
 
-        /*
-        // Point information debug
-        cout << "Point:" << endl;
-        cout << "X:" << point.x << endl;
-        cout << "Y:" << point.y << endl;
-        cout << "Z:" << point.z << endl;
-         */
+        // We move to the next horizontal laser.
+        horizontal_index++;
     }
 
     laserData = newLaserData;
@@ -463,23 +468,16 @@ RoboCompLidar3D::TLidarData SpecificWorker::Lidar3D_getLidarData(int start, int 
     double startRadians = start * M_PI / 180.0; // Convert to radians
     double lenRadians = len * M_PI / 180.0; // Convert to radians
 
-    // TODO: El filtro no está funcionando correctamente.
-    /*
     for (int i = 0; i < lidar3dData.size(); i++)
     {
-
-        double angle = atan2(lidar3dData[i].y, lidar3dData[i].x); // Calculate angle in radians
+        double angle = atan2(lidar3dData[i].y, lidar3dData[i].x) + M_PI; // Calculate angle in radians
         if (angle >= startRadians && angle <= (startRadians + lenRadians))
         {
             filteredData.push_back(lidar3dData[i]);
         }
     }
 
-    cout << "getLidarData: lidar3dfilteredData size:" << filteredData.size() << endl;
-
     return filteredData;
-     */
-    return lidar3dData;
 }
 
 #pragma endregion LIDAR
