@@ -54,7 +54,7 @@ class SpecificWorker : public GenericWorker
         RoboCompCameraRGBDSimple::TPoints CameraRGBDSimple_getPoints(std::string camera){};
 
 	    // Camera 360 RGB
-	    RoboCompCameraRGBDSimple::TImage Camera360RGB_getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight);
+	    RoboCompCamera360RGB::TImage Camera360RGB_getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight);
 
         // LIDAR
         RoboCompLaser::TLaserData Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState);

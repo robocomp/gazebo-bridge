@@ -311,14 +311,14 @@ void SpecificWorker::imu_cb(const gz::msgs::IMU &_msg)
     imuDataImu.acc = newAcceleration;
     imuDataImu.gyro = newAngularVel;
     imuDataImu.rot = newOrientation;
-    imuDataImu.mag = newMagneticFields;
+    //imuDataImu.mag = newMagneticFields;
 }
 
 
 #pragma endregion Gazebo_CallbackFunctions
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma region SimpleCameraRGBD
+#pragma region Cameras
 
 RoboCompCameraRGBDSimple::TRGBD SpecificWorker::CameraRGBDSimple_getAll(std::string camera)
 {
@@ -341,12 +341,12 @@ RoboCompCameraRGBDSimple::TImage SpecificWorker::CameraRGBDSimple_getImage(std::
     return this->cameraImage;
 }
 
-RoboCompCameraRGBDSimple::TImage SpecificWorker::Camera360RGB_getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight)
+RoboCompCamera360RGB::TImage SpecificWorker::Camera360RGB_getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight)
 {
     printNotImplementedWarningMessage("Camera360RGB_getROI");
 }
 
-#pragma endregion SimpleCameraRGBD
+#pragma endregion Cameras
 
 #pragma region OmniRobot
 
