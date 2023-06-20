@@ -459,7 +459,7 @@ RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserData()
     return SpecificWorker::laserData;
 }
 
-RoboCompLidar3D::TLidarData SpecificWorker::Lidar3D_getLidarData(int start, int len)
+RoboCompLidar3D::TLidarData SpecificWorker::Lidar3D_getLidarData(std::string name, int start, int len, int decimationfactor)
 {
     RoboCompLidar3D::TLidarData filteredData;
 

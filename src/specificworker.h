@@ -108,7 +108,7 @@ class SpecificWorker : public GenericWorker
 	    void Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity);
 
         // LIDAR 3D
-        RoboCompLidar3D::TLidarData Lidar3D_getLidarData(int start, int len);
+        RoboCompLidar3D::TLidarData Lidar3D_getLidarData(std::string name, int start, int len, int decimationfactor);
 
         // JOYSTICK
         void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
