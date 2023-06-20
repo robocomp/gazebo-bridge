@@ -729,6 +729,66 @@ void SpecificWorker::Gazebo2Robocomp_createSphereEntity(std::string name, RoboCo
     SpecificWorker::Gazebo2Robocomp_createEntity(sphereEntity);
 }
 
+void SpecificWorker::Gazebo2Robocomp_createHumanEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation)
+{
+    string humanEntity =
+    "<?xml version='1.0' ?>"
+    "<sdf version='1.10'>"
+    "<model name='" + name + "'>"
+    "<pose>" + std::to_string(position.x) + " " + std::to_string(position.y) + " " + std::to_string(position.z) + " " +
+    std::to_string(orientation.x) + " " + std::to_string(orientation.y) + " " + std::to_string(orientation.z) + "</pose>"
+    "<link name='human_link'>"
+    "<visual name='human_visual'>"
+
+    "<geometry>"
+    "<mesh>"
+    "<uri>model://BasicHuman/meshes/human_lowpoly.stl</uri>"
+    "</mesh>"
+    "</geometry>"
+
+    "<material>"
+    "<ambient>0 1 0 1</ambient>"
+    "<diffuse>0 1 0 1</diffuse>"
+    "<specular>0 1 0 1</specular>"
+    "</material>"
+    "</visual>"
+    "</link>"
+    "</model>"
+    "</sdf>";
+
+    SpecificWorker::Gazebo2Robocomp_createEntity(humanEntity);
+}
+
+void SpecificWorker::Gazebo2Robocomp_createRandomBoxEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float size)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::Gazebo2Robocomp_createRandomCapsuleEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::Gazebo2Robocomp_createRandomCylinderEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::Gazebo2Robocomp_createRandomHumanEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation)
+{
+//implementCODE
+
+}
+
+void SpecificWorker::Gazebo2Robocomp_createRandomSphereEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius)
+{
+//implementCODE
+
+}
+
 void SpecificWorker::Gazebo2Robocomp_createEntity(std::string sdf)
 {
     // Creating Entity Factory
@@ -838,7 +898,7 @@ RoboCompGazebo2Robocomp::Vector3 SpecificWorker::Gazebo2Robocomp_getWorldPositio
 }
 
 /**
- * @brief This method requires a serive to Gazebo. This requested service it's going to create a topic
+ * @brief This method requires a service to Gazebo. This requested service it's going to create a topic
  * in which Gazebo will publish its pose data.
  *
  * @param[in] _objectName Name of the object that we want to track.

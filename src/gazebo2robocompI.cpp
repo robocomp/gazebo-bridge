@@ -49,6 +49,36 @@ void Gazebo2RobocompI::createEntity(std::string sdf, const Ice::Current&)
 	worker->Gazebo2Robocomp_createEntity(sdf);
 }
 
+void Gazebo2RobocompI::createHumanEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, const Ice::Current&)
+{
+	worker->Gazebo2Robocomp_createHumanEntity(name, position, orientation);
+}
+
+void Gazebo2RobocompI::createRandomBoxEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float size, const Ice::Current&)
+{
+	worker->Gazebo2Robocomp_createRandomBoxEntity(position, orientation, size);
+}
+
+void Gazebo2RobocompI::createRandomCapsuleEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius, const Ice::Current&)
+{
+	worker->Gazebo2Robocomp_createRandomCapsuleEntity(position, orientation, length, radius);
+}
+
+void Gazebo2RobocompI::createRandomCylinderEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius, const Ice::Current&)
+{
+	worker->Gazebo2Robocomp_createRandomCylinderEntity(position, orientation, length, radius);
+}
+
+void Gazebo2RobocompI::createRandomHumanEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, const Ice::Current&)
+{
+	worker->Gazebo2Robocomp_createRandomHumanEntity(position, orientation);
+}
+
+void Gazebo2RobocompI::createRandomSphereEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius, const Ice::Current&)
+{
+	worker->Gazebo2Robocomp_createRandomSphereEntity(position, orientation, radius);
+}
+
 void Gazebo2RobocompI::createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius, const Ice::Current&)
 {
 	worker->Gazebo2Robocomp_createSphereEntity(name, position, orientation, radius);
