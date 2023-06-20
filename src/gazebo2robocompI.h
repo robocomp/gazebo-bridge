@@ -38,8 +38,10 @@ public:
 	void createCylinderEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius, const Ice::Current&);
 	void createEntity(std::string sdf, const Ice::Current&);
 	void createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius, const Ice::Current&);
+	RoboCompGazebo2Robocomp::Vector3 getWorldPosition(std::string name, const Ice::Current&);
 	void removeEntity(std::string name, const Ice::Current&);
 	void setEntityPose(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, const Ice::Current&);
+	void setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity, const Ice::Current&);
 
 private:
 

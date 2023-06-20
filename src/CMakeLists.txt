@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 
 IF ( "$ENV{ROBOCOMP}" STREQUAL "")
-  MESSAGE(WARNING "ROBOCOMP variable not set. Using the default value: /opt/robocomp")
-  SET (ENV{ROBOCOMP} "/opt/robocomp/")
+  MESSAGE(WARNING "ROBOCOMP variable not set. Using the default value: /home/robocomp/robocomp")
+  SET (ENV{ROBOCOMP} "/home/robocomp/robocomp")
 ENDIF ( "$ENV{ROBOCOMP}" STREQUAL "")
 
 IF(NOT EXISTS $ENV{ROBOCOMP}/cmake)
@@ -24,11 +24,14 @@ SET ( SOURCES
   genericmonitor.cpp
   commonbehaviorI.cpp
   genericworker.cpp
+  camera360rgbI.cpp
   camerargbdsimpleI.cpp
+  differentialrobotI.cpp
   gazebo2robocompI.cpp
   imuI.cpp
   jointmotorsimpleI.cpp
   laserI.cpp
+  lidar3dI.cpp
   omnirobotI.cpp
   joystickadapterI.cpp
 )
@@ -41,8 +44,8 @@ FIND_PACKAGE( Ice REQUIRED COMPONENTS Ice++11 IceStorm++11)
 
 #ROBOCOMP
 ROBOCOMP_INITIALIZE( $ENV{ROBOCOMP}/ )
-ROBOCOMP_IDSL_TO_ICE( CommonBehavior CameraRGBDSimple Gazebo2Robocomp GenericBase IMU JointMotorSimple JoystickAdapter Laser OmniRobot)
-ROBOCOMP_ICE_TO_SRC( CommonBehavior CameraRGBDSimple Gazebo2Robocomp GenericBase IMU JointMotorSimple JoystickAdapter Laser OmniRobot)
+ROBOCOMP_IDSL_TO_ICE( CommonBehavior Camera360RGB CameraRGBDSimple DifferentialRobot Gazebo2Robocomp GenericBase GenericBase GenericBase IMU JointMotorSimple JoystickAdapter Laser Lidar3D OmniRobot)
+ROBOCOMP_ICE_TO_SRC( CommonBehavior Camera360RGB CameraRGBDSimple DifferentialRobot Gazebo2Robocomp GenericBase GenericBase GenericBase IMU JointMotorSimple JoystickAdapter Laser Lidar3D OmniRobot)
 SET (EXECUTABLE_OUTPUT_PATH ${RC_COMPONENT_DEVEL_PATH}/bin)
 
 

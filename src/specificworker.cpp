@@ -1,5 +1,5 @@
 /*
- *    Copyright (C) 2022 by YOUR NAME HERE
+ *    Copyright (C) 2023 by YOUR NAME HERE
  *
  *    This file is part of RoboComp
  *
@@ -17,16 +17,11 @@
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "specificworker.h"
-#include <string>
-#include "topics.h"
-// Gazebo
-#include <gz/msgs.hh>
-#include <gz/transport.hh>
 
 using namespace std;
 using namespace gz;
 
-gz::transport::Node SpecificWorker::node;
+//gz::transport::Node SpecificWorker::node;
 
 /**
 * \brief Default constructor
@@ -53,12 +48,9 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 	return true;
 }
 
-#pragma endregion Gazebo_CallbackFunctions
-
 void SpecificWorker::initialize(int period)
 {
     #pragma region Robocomp
-
 
 	std::cout << "Initialize worker" << std::endl;
 	this->Period = period;
@@ -115,8 +107,8 @@ void SpecificWorker::initialize(int period)
 
 void SpecificWorker::compute()
 {
-    // DEBUG: LIDAR
     /*
+    // DEBUG: LIDAR
     std::cout << "Laser Data:" << std::endl;
     for (const auto& data : laserData)
     {
@@ -124,6 +116,7 @@ void SpecificWorker::compute()
         std::cout << "Distance: " << data.dist << " meters" << std::endl;
     }
      */
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -136,6 +129,7 @@ void SpecificWorker::compute()
  */
 void SpecificWorker::odometry_cb(const gz::msgs::Odometry &_msg)
 {
+    lastOdometryValue = _msg;
     RoboCompGenericBase::TBaseState newOdometryData;
     // Valores de posición
     newOdometryData.x = _msg.pose().position().x();
@@ -156,7 +150,6 @@ void SpecificWorker::odometry_cb(const gz::msgs::Odometry &_msg)
     // Valor de la velocidad de rotación
     newOdometryData.rotV = _msg.twist().angular().z();
 
-
     // TODO: Valor de rotación acumulada
     // Actualmente newOdometryData es la acumulación del valor redondeado de la velocidad de
     // rotación
@@ -174,27 +167,58 @@ void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
 {
     RoboCompLaser::TLaserData newLaserData;
     RoboCompLaser::LaserConfData newLaserConfData;
+    RoboCompLidar3D::TLidarData newLidar3dData;
 
     // ## DATOS DE CONFIGURACION DE LOS LASERES
-
     newLaserConfData.maxDegrees = _msg.angle_max();
     newLaserConfData.maxRange = _msg.range_max();
     newLaserConfData.minRange = _msg.range_min();
     newLaserConfData.angleRes = _msg.angle_step();
 
     // ## DATOS DE LOS LÁSERES
+    int vertical_count = _msg.vertical_count(); // get the vertical scan count
+    int horizontal_count = _msg.count(); // get the horizontal
 
+    // ## RECORRIDO DE LOS LASERES Y CONVERSION A X, Y, Z.
+    int verticalIndexChangeFlag = -1;       // This flag is used to indicate the change in the vertical index of the lidar scan.
+    int horizontal_index = 0;
     // Iterate through ranges array in _msg and create TData structs
     for (int i = 0; i < _msg.ranges_size(); i++)
     {
+        int vertical_index = i / horizontal_count;        // calculate which vertical scan we're at
+
+        // In each vertical index change we need to reset the horizontal index.
+        if(vertical_index != verticalIndexChangeFlag){
+            verticalIndexChangeFlag = vertical_index;
+            horizontal_index = 0;
+        }
+
+        float horizontal_angle = _msg.angle_min() + horizontal_index * _msg.angle_step();
+        float vertical_angle = _msg.vertical_angle_min() + vertical_index * _msg.vertical_angle_step();
+
+        // In TData we only need to Laser Data of the first horizontal line.
         RoboCompLaser::TData data;
-        data.angle = _msg.angle_min() + i * _msg.angle_step();
+        data.angle = horizontal_angle;  // Horizontal angle
         data.dist = _msg.ranges(i);
+
+        // Now let's add the 3d lidar data to TLidarData
+        RoboCompLidar3D::TPoint point;
+        point.x = data.dist * cos(horizontal_angle) * cos(vertical_angle);
+        point.y = data.dist * sin(horizontal_angle) * cos(vertical_angle);
+        point.z = data.dist * sin(vertical_angle);      // z is the vertical component
+        point.intensity = _msg.intensities(i);
+
+        newLidar3dData.push_back(point);
         newLaserData.push_back(data);
+
+        // We move to the next horizontal laser.
+        horizontal_index++;
     }
 
+    // Setting the shared attributes values.
     laserData = newLaserData;
     laserDataConf = newLaserConfData;
+    lidar3dData = newLidar3dData;
 }
 
 /**
@@ -276,21 +300,25 @@ void SpecificWorker::imu_cb(const gz::msgs::IMU &_msg)
     newOrientation.Yaw = _msg.orientation().z();
     imuOrientation = newOrientation;
 
+    // TODO: Recoger datos del sensor magnetico
     // Magnetic field
-    RoboCompIMU::Magnetic newMagneticFields;
-    // TODO: Recoger datos de magnetismo.
+    //RoboCompIMU::Magnetic newMagneticFields;
+    //newMagneticFields.XMag = ??? ;
+    //newMagneticFields.YMag = ??? ;
+    //newMagneticFields.ZMag = ??? ;
 
     // IMU Data
     imuDataImu.acc = newAcceleration;
     imuDataImu.gyro = newAngularVel;
     imuDataImu.rot = newOrientation;
-    imuDataImu.mag = newMagneticFields;
+    //imuDataImu.mag = newMagneticFields;
 }
+
 
 #pragma endregion Gazebo_CallbackFunctions
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma region SimpleCameraRGBD
+#pragma region Cameras
 
 RoboCompCameraRGBDSimple::TRGBD SpecificWorker::CameraRGBDSimple_getAll(std::string camera)
 {
@@ -313,7 +341,12 @@ RoboCompCameraRGBDSimple::TImage SpecificWorker::CameraRGBDSimple_getImage(std::
     return this->cameraImage;
 }
 
-#pragma endregion SimpleCameraRGBD
+RoboCompCamera360RGB::TImage SpecificWorker::Camera360RGB_getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight)
+{
+    printNotImplementedWarningMessage("Camera360RGB_getROI");
+}
+
+#pragma endregion Cameras
 
 #pragma region OmniRobot
 
@@ -375,20 +408,35 @@ void SpecificWorker::OmniRobot_setOdometer(RoboCompGenericBase::TBaseState state
 
 void SpecificWorker::OmniRobot_setOdometerPose(int x, int z, float alpha)
 {
-    // TODO: Implement
-    printNotImplementedWarningMessage("OmniRobot_setOdometerPose");
+    // Declaration of Gazebo publisher
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Odometry>(completeOdometryTopic);
+
+    // Valores de posición
+    lastOdometryValue.mutable_pose()->mutable_position()->set_x(x);
+    lastOdometryValue.mutable_pose()->mutable_position()->set_y(z);
+    // lastOdometryValue.mutable_??? -> alpha ??;
+
+    // Publish to Gazebo with the actual Joystick output.
+    pub.Publish(lastOdometryValue);
 }
 
 void SpecificWorker::OmniRobot_setSpeedBase(float advx, float advz, float rot)
 {
-    // TODO: Implement
-    printNotImplementedWarningMessage("OmniRobot_setSpeedBase");
+    // Declaration of Gazebo publisher
+    gz::transport::Node::Publisher pub = SpecificWorker::node.Advertise<gz::msgs::Odometry>(completeOdometryTopic);
+
+    // Valores de velocidad
+    lastOdometryValue.mutable_twist()->mutable_linear()->set_x(advx);
+    lastOdometryValue.mutable_twist()->mutable_linear()->set_y(advz);
+    lastOdometryValue.mutable_twist()->mutable_angular()->set_z(rot);
+
+    // Publish to Gazebo with the actual Joystick output.
+    pub.Publish(lastOdometryValue);
 }
 
 void SpecificWorker::OmniRobot_stopBase()
 {
-    // TODO: Implement
-    printNotImplementedWarningMessage("OmniRobot_stopBase");
+    OmniRobot_setSpeedBase(0, 0, 0);
 }
 
 #pragma endregion OmniRobot
@@ -409,6 +457,25 @@ RoboCompLaser::LaserConfData SpecificWorker::Laser_getLaserConfData()
 RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserData()
 {
     return SpecificWorker::laserData;
+}
+
+RoboCompLidar3D::TLidarData SpecificWorker::Lidar3D_getLidarData(std::string name, int start, int len, int decimationfactor)
+{
+    RoboCompLidar3D::TLidarData filteredData;
+
+    double startRadians = start * M_PI / 180.0; // Convert to radians
+    double lenRadians = len * M_PI / 180.0; // Convert to radians
+
+    for (int i = 0; i < lidar3dData.size(); i++)
+    {
+        double angle = atan2(lidar3dData[i].y, lidar3dData[i].x) + M_PI; // Calculate angle in radians
+        if (angle >= startRadians && angle <= (startRadians + lenRadians))
+        {
+            filteredData.push_back(lidar3dData[i]);
+        }
+    }
+
+    return filteredData;
 }
 
 #pragma endregion LIDAR
@@ -499,6 +566,52 @@ void SpecificWorker::JointMotorSimple_setZeroPos(std::string name)
 }
 
 #pragma endregion JointMotorSimple
+
+#pragma region DifferentialRobot
+
+void SpecificWorker::DifferentialRobot_correctOdometer(int x, int z, float alpha)
+{
+    OmniRobot_correctOdometer(x, z, alpha);
+
+}
+
+void SpecificWorker::DifferentialRobot_getBasePose(int &x, int &z, float &alpha)
+{
+    OmniRobot_getBasePose(x, z, alpha);
+
+}
+
+void SpecificWorker::DifferentialRobot_getBaseState(RoboCompGenericBase::TBaseState &state)
+{
+    OmniRobot_getBaseState(state);
+}
+
+void SpecificWorker::DifferentialRobot_resetOdometer()
+{
+    OmniRobot_resetOdometer();
+}
+
+void SpecificWorker::DifferentialRobot_setOdometer(RoboCompGenericBase::TBaseState state)
+{
+    OmniRobot_setOdometer(state);
+}
+
+void SpecificWorker::DifferentialRobot_setOdometerPose(int x, int z, float alpha)
+{
+    OmniRobot_setOdometerPose(x, z, alpha);
+}
+
+void SpecificWorker::DifferentialRobot_setSpeedBase(float adv, float rot)
+{
+    OmniRobot_setSpeedBase(adv, 0, rot);
+}
+
+void SpecificWorker::DifferentialRobot_stopBase()
+{
+    OmniRobot_setSpeedBase(0, 0, 0);
+}
+
+#pragma endregion DifferentialRobot
 
 #pragma region Gazebo2Robocomp_Interfaces
 
@@ -692,6 +805,74 @@ void SpecificWorker::Gazebo2Robocomp_setEntityPose(std::string name, RoboCompGaz
         cerr << "[Set_Pose] Service call timed out" << endl;
 }
 
+void SpecificWorker::Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity)
+{
+    gz::msgs::Pose pose;
+    gz::msgs::Boolean reply;
+    bool result;
+    const unsigned int timeout = 300;
+
+    pose.set_name(name);
+    pose.mutable_position()->set_x(velocity.x);
+    pose.mutable_position()->set_y(velocity.y);
+    pose.mutable_position()->set_z(velocity.z);
+
+    bool executed = node.Request("/world/" + gazeboWorldName + "/set_link_linear_velocity", pose, timeout, reply, result);
+
+    if (executed)
+        cout << "[set_link_linear_velocity] Service executed successfully" << endl;
+    else
+        cerr << "[set_link_linear_velocity] Service call timed out" << endl;
+}
+
+RoboCompGazebo2Robocomp::Vector3 SpecificWorker::Gazebo2Robocomp_getWorldPosition(std::string name)
+{
+    //If the object is not in the map, we are not tracking it.
+    if(!isTracking(name)){
+        // So we create a topic in which Gazebo is gonna publish their pose data.
+        trackObject(name);
+        cout << "[get_world_position] Object:'" << name << "' is now tracked" << endl;
+    }
+
+    return objectsData[name]->position;
+}
+
+/**
+ * @brief This method requires a serive to Gazebo. This requested service it's going to create a topic
+ * in which Gazebo will publish its pose data.
+ *
+ * @param[in] _objectName Name of the object that we want to track.
+ */
+void SpecificWorker::trackObject(const string &_objectName) {
+    gz::msgs::StringMsg nameMsg;
+    gz::msgs::Boolean reply;
+    bool result;
+    const unsigned int timeout = 300;
+
+    // We require to the create the topic
+    nameMsg.set_data(_objectName);
+    bool executed = node.Request("/world/" + gazeboWorldName + "/get_world_position", nameMsg, timeout, reply, result);
+
+    if (executed)
+        cout << "[get_world_position] Service executed successfully" << endl;
+    else
+        cerr << "[get_world_position] Service call timed out" << endl;
+
+
+    objectsData[_objectName] = std::make_shared<ObjectData>();
+
+    string topic = "/model/" + _objectName + "/get_world_position";
+    node.Subscribe(topic, &SpecificWorker::trackObject_cb, this);
+}
+
+void SpecificWorker::trackObject_cb(const gz::msgs::Pose &_msg) {
+
+    auto objectData = objectsData[_msg.name()];
+    objectData->position.x = _msg.position().x();
+    objectData->position.y = _msg.position().y();
+    objectData->position.z = _msg.position().z();
+}
+
 #pragma endregion Gazebo2Robocomp_Interfaces
 
 /**
@@ -755,6 +936,39 @@ void SpecificWorker::printNotImplementedWarningMessage(string functionName)
 // RoboCompCameraRGBDSimple::TRGBD
 
 /**************************************/
+// From the RoboCompDifferentialRobot you can use this types:
+// RoboCompDifferentialRobot::TMechParams
+
+/**************************************/
+// From the RoboCompGazebo2Robocomp you can use this types:
+// RoboCompGazebo2Robocomp::Vector3
+// RoboCompGazebo2Robocomp::Quaternion
+
+/**************************************/
+// From the RoboCompIMU you can use this types:
+// RoboCompIMU::Acceleration
+// RoboCompIMU::Gyroscope
+// RoboCompIMU::Magnetic
+// RoboCompIMU::Orientation
+// RoboCompIMU::DataImu
+
+/**************************************/
+// From the RoboCompJointMotorSimple you can use this types:
+// RoboCompJointMotorSimple::MotorState
+// RoboCompJointMotorSimple::MotorParams
+// RoboCompJointMotorSimple::MotorGoalPosition
+// RoboCompJointMotorSimple::MotorGoalVelocity
+
+/**************************************/
+// From the RoboCompLaser you can use this types:
+// RoboCompLaser::LaserConfData
+// RoboCompLaser::TData
+
+/**************************************/
+// From the RoboCompLidar3D you can use this types:
+// RoboCompLidar3D::TPoint
+
+/**************************************/
 // From the RoboCompOmniRobot you can use this types:
 // RoboCompOmniRobot::TMechParams
 
@@ -763,10 +977,4 @@ void SpecificWorker::printNotImplementedWarningMessage(string functionName)
 // RoboCompJoystickAdapter::AxisParams
 // RoboCompJoystickAdapter::ButtonParams
 // RoboCompJoystickAdapter::TData
-
-/**************************************/
-// From the RoboCompLaser you can use this types:
-// RoboCompLaser::LaserConfData
-// RoboCompLaser::TData
-
 

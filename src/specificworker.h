@@ -1,5 +1,5 @@
 /*
- *    Copyright (C) 2022 by YOUR NAME HERE
+ *    Copyright (C) 2023 by YOUR NAME HERE
  *
  *    This file is part of RoboComp
  *
@@ -30,10 +30,14 @@
 #define SPECIFICWORKER_H
 
 #include <genericworker.h>
-#include <innermodel/innermodel.h>
+#include <fps/fps.h>
+#include <string>
+#include <cmath>
+#include "topics.h"
+
+// Gazebo
 #include <gz/msgs.hh>
 #include <gz/transport.hh>
-#include <fps/fps.h>
 
 class SpecificWorker : public GenericWorker
 {
@@ -49,10 +53,14 @@ class SpecificWorker : public GenericWorker
         RoboCompCameraRGBDSimple::TImage CameraRGBDSimple_getImage(std::string camera);
         RoboCompCameraRGBDSimple::TPoints CameraRGBDSimple_getPoints(std::string camera){};
 
+	    // Camera 360 RGB
+	    RoboCompCamera360RGB::TImage Camera360RGB_getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight);
+
         // LIDAR
         RoboCompLaser::TLaserData Laser_getLaserAndBStateData(RoboCompGenericBase::TBaseState &bState);
         RoboCompLaser::LaserConfData Laser_getLaserConfData();
         RoboCompLaser::TLaserData Laser_getLaserData();
+
         // OMNIROBOT
         void OmniRobot_correctOdometer(int x, int z, float alpha);
         void OmniRobot_getBasePose(int &x, int &z, float &alpha);
@@ -62,6 +70,17 @@ class SpecificWorker : public GenericWorker
         void OmniRobot_setOdometerPose(int x, int z, float alpha);
         void OmniRobot_setSpeedBase(float advx, float advz, float rot);
         void OmniRobot_stopBase();
+
+	    // DIFFERENTIALROBOT
+	    void DifferentialRobot_correctOdometer(int x, int z, float alpha);
+    	void DifferentialRobot_getBasePose(int &x, int &z, float &alpha);
+	    void DifferentialRobot_getBaseState(RoboCompGenericBase::TBaseState &state);
+	    void DifferentialRobot_resetOdometer();
+	    void DifferentialRobot_setOdometer(RoboCompGenericBase::TBaseState state);
+	    void DifferentialRobot_setOdometerPose(int x, int z, float alpha);
+	    void DifferentialRobot_setSpeedBase(float adv, float rot);
+	    void DifferentialRobot_stopBase();
+
         // IMU
         RoboCompIMU::Acceleration IMU_getAcceleration();
         RoboCompIMU::Gyroscope IMU_getAngularVel();
@@ -69,27 +88,38 @@ class SpecificWorker : public GenericWorker
         RoboCompIMU::Magnetic IMU_getMagneticFields();
         RoboCompIMU::Orientation IMU_getOrientation();
         void IMU_resetImu();
+
         // JOINTMOTORSIMPLE
         RoboCompJointMotorSimple::MotorParams JointMotorSimple_getMotorParams(std::string motor);
         RoboCompJointMotorSimple::MotorState JointMotorSimple_getMotorState(std::string motor);
         void JointMotorSimple_setPosition(std::string name, RoboCompJointMotorSimple::MotorGoalPosition goal);
         void JointMotorSimple_setVelocity(std::string name, RoboCompJointMotorSimple::MotorGoalVelocity goal);
         void JointMotorSimple_setZeroPos(std::string name);
-	// GAZEBO2ROBOCOMP Interfaces
-	void Gazebo2Robocomp_createBoxEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float size);
-	void Gazebo2Robocomp_createCapsuleEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius);
-	void Gazebo2Robocomp_createCylinderEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius);
-	void Gazebo2Robocomp_createEntity(std::string sdf);
-	void Gazebo2Robocomp_createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius);
-	void Gazebo2Robocomp_removeEntity(std::string name);
-	void Gazebo2Robocomp_setEntityPose(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation);
 
+        // GAZEBO2ROBOCOMP Interfaces
+        void Gazebo2Robocomp_createBoxEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float size);
+        void Gazebo2Robocomp_createCapsuleEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius);
+        void Gazebo2Robocomp_createCylinderEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius);
+        void Gazebo2Robocomp_createEntity(std::string sdf);
+        void Gazebo2Robocomp_createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius);
+        void Gazebo2Robocomp_removeEntity(std::string name);
+        void Gazebo2Robocomp_setEntityPose(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation);
+	    RoboCompGazebo2Robocomp::Vector3 Gazebo2Robocomp_getWorldPosition(std::string name);
+	    void Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity);
+
+        // LIDAR 3D
+        RoboCompLidar3D::TLidarData Lidar3D_getLidarData(std::string name, int start, int len, int decimationfactor);
 
         // JOYSTICK
         void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
 
         // Gazebo Transport client
-        static gz::transport::Node node;
+        gz::transport::Node node;
+
+        // Data structure for the object data tracking funcionality.
+        struct ObjectData{
+            RoboCompGazebo2Robocomp::Vector3 position;
+    };
 
     public slots:
         void compute();
@@ -97,7 +127,6 @@ class SpecificWorker : public GenericWorker
         void initialize(int period);
 
     private:
-        std::shared_ptr < InnerModel > innerModel;
         bool startup_check_flag;
         FPSCounter fps;
 
@@ -113,9 +142,13 @@ class SpecificWorker : public GenericWorker
         RoboCompLaser::TLaserData laserData;
         RoboCompLaser::LaserConfData laserDataConf;
 
+        // Lidar3d
+        RoboCompLidar3D::TLidarData lidar3dData;
+
         // Odometer
         RoboCompGenericBase::TBaseState odometryTargetState;
         string completeOdometryTopic;
+        gz::msgs::Odometry lastOdometryValue;
 
         // Imu
         RoboCompIMU::Acceleration imuAcceleration;
@@ -124,18 +157,26 @@ class SpecificWorker : public GenericWorker
         RoboCompIMU::Magnetic imuMagneticFields;
         RoboCompIMU::Orientation imuOrientation;
 
-        // Callbacks functions
+        // Callbacks functions for sensors
         void depth_camera_cb(const gz::msgs::Image &_msg);
         void lidar_cb(const gz::msgs::LaserScan &_msg);
         void camera_cb(const gz::msgs::Image &_msg);
         void odometry_cb(const gz::msgs::Odometry &_msg);
         void imu_cb(const gz::msgs::IMU &_msg);
 
+        // Objects for the object data tracking
+        std::map<std::string, shared_ptr<ObjectData>> objectsData;
+        void trackObject(const std::string& objectName);
+        void trackObject_cb(const gz::msgs::Pose &_msg);
+
+
+
         // Auxiliar functions
         void printNotImplementedWarningMessage(string functionName);
-
-
-
+        // Checks if an object is being tracked
+        bool isTracking(const std::string& objectName) {
+            return objectsData.count(objectName) > 0;
+        }
 };
 
 #endif

@@ -10,6 +10,9 @@ SET ( HEADERS
   specificmonitor.h
 )
 
+add_definitions(-O3  -fmax-errors=1 -fno-char8_t -Wno-unknown-pragmas)
+
+
 #Find the Gazebo_Transport library
 find_package(gz-transport12 QUIET REQUIRED OPTIONAL_COMPONENTS log)
 set(GZ_TRANSPORT_VER ${gz-transport12_VERSION_MAJOR})

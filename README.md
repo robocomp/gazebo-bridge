@@ -59,27 +59,30 @@ for been used with your own parameter values. </p>
 <p> Actually, a config file for this component looks like this: </p>
 
     CommonBehavior.Endpoints=tcp -p 10217
-    
+
     # Endpoints for implements interfaces
     CameraRGBDSimple.Endpoints=tcp -p 10096
     Laser.Endpoints=tcp -p 10003
+    OmniRobot.Endpoints=tcp -p 10004
     IMU.Endpoints=tcp -p 10005
     JointMotorSimple.Endpoints=tcp -p 10006
-    OmniRobot.Endpoints=tcp -p 10004
-    
-    
+    DifferentialRobot.Endpoints=tcp -p 10007
+    Gazebo2Robocomp.Endpoints=tcp -p 10008
+
+
     # Endpoints for subscriptions interfaces
     JoystickAdapterTopic.Endpoints=tcp -p 11025
-    
-    
+
+
     # This property is used by the clients to connect to IceStorm.
     TopicManager.Proxy=IceStorm/TopicManager:default -p 9999
     
     InnerModelPath = innermodel.xml
-    
+
     # Custom parameters
     odometry_target_name = simple_robot
-    
+    gazebo_world_name = empty
+
     Ice.Warn.Connections=0
     Ice.Trace.Network=0
     Ice.Trace.Protocol=0
@@ -91,15 +94,18 @@ comes through the custom parameters.
 
     # Custom parameters
     odometry_target_name = simple_robot
+    gazebo_world_name = empty
 
-<p> This parameter determines the model in the Gazebo simulation on which 
+<p> The <strong>'odometry_target_name'</strong> parameter determines the model in the Gazebo simulation on which 
 the component will record the odometry data.
 If your object on which you want to record it has the name 
 of "robot_model" or "car1" or any other name you need to specify it
 in the odometry_target_name parameter.
-</p>
 
-<p> The recommendation is that when you start working with the component 
+On the other hand, the <strong>'gazebo_world_name'</strong> parameter determines the Gazebo world over 
+which Gazebo2Robocomp has scope of action.
+
+The recommendation is that when you start working with the component 
 you create your own config file where you can make the changes you need.
 </p>
 
@@ -114,21 +120,24 @@ system of topics using gz-transport, the topics linked to each supported
 component are the following:
 </p>
 
-| Robocomp Component | Gazebo sensor or plugin |         Topic |
-|--------------------|:-----------------------:|--------------:|
-| CameraRGBDSimple   |         camera          |       /camera |
-| CameraRGBDSimple   |      depth_camera       | /depth_camera |
-| Laser              |        gpu_lidar        |        /lidar |
-| IMU                |           imu           |          /imu |
-| JointMotorSimple   |        DiffDrive         |      /cmd_vel |
-| JoystickAdapter    |        DiffDrive         |      /cmd_vel |
+| Robocomp Component | Gazebo sensor or plugin |                                      Topic |
+|--------------------|:-----------------------:|-------------------------------------------:|
+| CameraRGBDSimple   |         camera          |                                    /camera |
+| CameraRGBDSimple   |      depth_camera       |                              /depth_camera |
+| Laser              |        gpu_lidar        |                                     /lidar |
+| IMU                |           imu           |                                       /imu |
+| JointMotorSimple   |        DiffDrive        |                                   /cmd_vel |
+| JoystickAdapter    |        DiffDrive        |                                   /cmd_vel |
+| OmniRobot          |     model/odometer      | /model/ + odometry_target_name + /odometry |
+| DifferentialRobot  |     model/odometer      | /model/ + odometry_target_name + /odometry |
+| Lidar3D            |        gpu_lidar        |                                    /lidar  |
 
 
 ## Example Usage
 
 <p>
 For example, if you want to use Gazebo2Robocomp to move a robot using a Joystick,
-you can download this <a href="https://github.com/">Inverted Pendulum</a> Gazebo world and follow the
+you can download this <a href="https://github.com/SergioTrac/GazeboWorld_InvertedPendulum">Inverted Pendulum</a> Gazebo world and follow the
 the following:
 </p>
 
@@ -176,4 +185,22 @@ the <a href="https://github.com/robocomp/robocomp-robolab"> standard Robocomp co
 You should now be able to move your robot using the Joystick. Have fun!
 </p>
 
+## Supported Robocomp Interfaces
+
+<p> Gazebo2Robocomp not only has the ability to collect data from Gazebo sensors 
+and plugins, it also provides <a href="https://github.com/robocomp/robocomp/blob/development/interfaces/IDSLs/Gazebo2Robocomp.idsl">interfaces</a> to other Robocomp Components with the ability to call <strong>services</strong> offered by plugins. 
+Currently the supported services are the following:
+</p>
+
+
+| Gazebo2Robocomp Interface | Gazebo sensor or plugin |                                            Service |
+|---------------------------|:-----------------------:|---------------------------------------------------:|
+| `CreateBoxEntity`         |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateCapsuleEntity`     |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateCylinderEntity`    |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateSphereEntity`      |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `RemoveEntity`            |       UserCommand       |              /world/ + gazebo_world_name + /remove |
+| `SetEntityPose`           |       UserCommand       |            /world/ + gazebo_world_name + /set_pose |
+| `GetWorldPosition`        |     EntitiesControl     |  /world/ + gazebo_world_name + /get_world_position |
+| `SetLinearVelocity`       |   EntitiesControl       | /world/ + gazebo_world_name + /set_linear_velocity |
 

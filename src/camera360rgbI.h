@@ -16,40 +16,29 @@
  *    You should have received a copy of the GNU General Public License
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef CAMERA360RGB_H
+#define CAMERA360RGB_H
+
+// Ice includes
+#include <Ice/Ice.h>
+#include <Camera360RGB.h>
+
+#include <config.h>
 #include "genericworker.h"
-/**
-* \brief Default constructor
-*/
-GenericWorker::GenericWorker(TuplePrx tprx) : QObject()
+
+
+class Camera360RGBI : public virtual RoboCompCamera360RGB::Camera360RGB
 {
+public:
+	Camera360RGBI(GenericWorker *_worker);
+	~Camera360RGBI();
 
+	RoboCompCamera360RGB::TImage getROI(int cx, int cy, int sx, int sy, int roiwidth, int roiheight, const Ice::Current&);
 
-	mutex = new QMutex();
+private:
 
-	Period = BASIC_PERIOD;
-	connect(&timer, SIGNAL(timeout()), this, SLOT(compute()));
+	GenericWorker *worker;
 
-}
+};
 
-/**
-* \brief Default destructor
-*/
-GenericWorker::~GenericWorker()
-{
-
-}
-void GenericWorker::killYourSelf()
-{
-	rDebug("Killing myself");
-	emit kill();
-}
-/**
-* \brief Change compute period
-* @param per Period in ms
-*/
-void GenericWorker::setPeriod(int p)
-{
-	rDebug("Period changed"+QString::number(p));
-	Period = p;
-	timer.start(Period);
-}
+#endif

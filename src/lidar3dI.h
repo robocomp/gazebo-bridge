@@ -16,40 +16,29 @@
  *    You should have received a copy of the GNU General Public License
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef LIDAR3D_H
+#define LIDAR3D_H
+
+// Ice includes
+#include <Ice/Ice.h>
+#include <Lidar3D.h>
+
+#include <config.h>
 #include "genericworker.h"
-/**
-* \brief Default constructor
-*/
-GenericWorker::GenericWorker(TuplePrx tprx) : QObject()
+
+
+class Lidar3DI : public virtual RoboCompLidar3D::Lidar3D
 {
+public:
+	Lidar3DI(GenericWorker *_worker);
+	~Lidar3DI();
 
+	RoboCompLidar3D::TLidarData getLidarData(std::string name, int start, int len, int decimationfactor, const Ice::Current&);
 
-	mutex = new QMutex();
+private:
 
-	Period = BASIC_PERIOD;
-	connect(&timer, SIGNAL(timeout()), this, SLOT(compute()));
+	GenericWorker *worker;
 
-}
+};
 
-/**
-* \brief Default destructor
-*/
-GenericWorker::~GenericWorker()
-{
-
-}
-void GenericWorker::killYourSelf()
-{
-	rDebug("Killing myself");
-	emit kill();
-}
-/**
-* \brief Change compute period
-* @param per Period in ms
-*/
-void GenericWorker::setPeriod(int p)
-{
-	rDebug("Period changed"+QString::number(p));
-	Period = p;
-	timer.start(Period);
-}
+#endif

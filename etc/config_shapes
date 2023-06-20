@@ -11,8 +11,6 @@ Gazebo2Robocomp.Endpoints=tcp -p 10008
 Lidar3D.Endpoints=tcp -p 10009
 Camera360RGB.Endpoints=tcp -p 10010
 
-
-
 # Endpoints for subscriptions interfaces
 JoystickAdapterTopic.Endpoints=tcp -p 11025
 
@@ -23,8 +21,8 @@ TopicManager.Proxy=IceStorm/TopicManager:default -p 9999
 InnerModelPath = innermodel.xml
 
 # Custom parameters
-odometry_target_name = simple_robot
-gazebo_world_name = basic
+odometry_target_name = none
+gazebo_world_name = shapes
 
 Ice.Warn.Connections=0
 Ice.Trace.Network=0
