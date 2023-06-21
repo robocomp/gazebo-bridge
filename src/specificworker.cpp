@@ -742,15 +742,10 @@ void SpecificWorker::Gazebo2Robocomp_createHumanEntity(std::string name, RoboCom
 
     "<geometry>"
     "<mesh>"
-    "<uri>model://BasicHuman/meshes/human_lowpoly.stl</uri>"
+    "<uri>model://bridge_BasicHuman/meshes/guy_rigged.dae</uri>"
     "</mesh>"
     "</geometry>"
 
-    "<material>"
-    "<ambient>0 1 0 1</ambient>"
-    "<diffuse>0 1 0 1</diffuse>"
-    "<specular>0 1 0 1</specular>"
-    "</material>"
     "</visual>"
     "</link>"
     "</model>"
