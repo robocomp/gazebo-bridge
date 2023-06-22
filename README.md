@@ -15,7 +15,7 @@ other Robocomp components or sending topic and commands to the simulation.
 <p> Next, you need to install the <a href="https://gazebosim.org/docs/garden/install_ubuntu">Gazebo</a> simulator. (Gazebo Garden is the latest version tested.)
 </p>
 
-<p> Lastly, you need to install the <strong>gz-transport12</strong> library.
+<p> You need to install the <strong>gz-transport12</strong> library also.
 </p>
 
 ```bash
@@ -28,8 +28,20 @@ sudo apt-get install libgz-transport12
 sudo apt-get install libgz-transport12-dev
 ```
 
+<p> Lastly, in order to be able to use the bridge resouces like custom meshes in human creation entities you need to add the next environmental variable in <strong>~/.bashrc</strong>
+</p>
+
+```bash
+export GZ_SIM_RESOURCE_PATH=<YOUR_GAZEBO_BRIDGE_FOLDER>/Resources/Models/:./local_models/
+``` 
+
+<p> This will allow your .sdf scenes to know where to find the extra resources 
+that gazebo-bridge uses, it will also allow you to create a local_models folder in the root folder of your Gazebo project where you can store your 
+own .sdf models and have Gazebo find them.
+</p>
+
 <p> Now you are ready to run the component. Remember that for the component 
-to be able to collect data, the simulator and the simulation must be started.
+to be able to collect data, the component, the simulator and the simulation must be started.
 </p>
 
 
@@ -68,6 +80,8 @@ for been used with your own parameter values. </p>
     JointMotorSimple.Endpoints=tcp -p 10006
     DifferentialRobot.Endpoints=tcp -p 10007
     Gazebo2Robocomp.Endpoints=tcp -p 10008
+    Lidar3D.Endpoints=tcp -p 10009
+    Camera360RGB.Endpoints=tcp -p 10010
 
 
     # Endpoints for subscriptions interfaces
@@ -193,14 +207,20 @@ Currently the supported services are the following:
 </p>
 
 
-| Gazebo2Robocomp Interface | Gazebo sensor or plugin |                                            Service |
-|---------------------------|:-----------------------:|---------------------------------------------------:|
-| `CreateBoxEntity`         |       UserCommand       |              /world/ + gazebo_world_name + /create |
-| `CreateCapsuleEntity`     |       UserCommand       |              /world/ + gazebo_world_name + /create |
-| `CreateCylinderEntity`    |       UserCommand       |              /world/ + gazebo_world_name + /create |
-| `CreateSphereEntity`      |       UserCommand       |              /world/ + gazebo_world_name + /create |
-| `RemoveEntity`            |       UserCommand       |              /world/ + gazebo_world_name + /remove |
-| `SetEntityPose`           |       UserCommand       |            /world/ + gazebo_world_name + /set_pose |
-| `GetWorldPosition`        |     EntitiesControl     |  /world/ + gazebo_world_name + /get_world_position |
-| `SetLinearVelocity`       |   EntitiesControl       | /world/ + gazebo_world_name + /set_linear_velocity |
+| Gazebo2Robocomp Interface    | Gazebo sensor or plugin |                                            Service |
+|------------------------------|:-----------------------:|---------------------------------------------------:|
+| `CreateBoxEntity`            |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateCapsuleEntity`        |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateCylinderEntity`       |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateSphereEntity`         |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateHumanEntity`          |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateRandomBoxEntity`      |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateRandomCapsuleEntity`  |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateRandomCylinderEntity` |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateRandomSphereEntity`   |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `CreateRandomHumanEntity`    |       UserCommand       |              /world/ + gazebo_world_name + /create |
+| `RemoveEntity`               |       UserCommand       |              /world/ + gazebo_world_name + /remove |
+| `SetEntityPose`              |       UserCommand       |            /world/ + gazebo_world_name + /set_pose |
+| `GetWorldPosition`           |     EntitiesControl     |  /world/ + gazebo_world_name + /get_world_position |
+| `SetLinearVelocity`          |   EntitiesControl       | /world/ + gazebo_world_name + /set_linear_velocity |
 

@@ -24,7 +24,7 @@ InnerModelPath = innermodel.xml
 
 # Custom parameters
 odometry_target_name = shadow
-gazebo_world_name = empty
+gazebo_world_name = shadow_empty
 
 Ice.Warn.Connections=0
 Ice.Trace.Network=0

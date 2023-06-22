@@ -75,6 +75,12 @@ public:
 	virtual void Gazebo2Robocomp_createCapsuleEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius) = 0;
 	virtual void Gazebo2Robocomp_createCylinderEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius) = 0;
 	virtual void Gazebo2Robocomp_createEntity(std::string sdf) = 0;
+	virtual void Gazebo2Robocomp_createHumanEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation) = 0;
+	virtual void Gazebo2Robocomp_createRandomBoxEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float size) = 0;
+	virtual void Gazebo2Robocomp_createRandomCapsuleEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius) = 0;
+	virtual void Gazebo2Robocomp_createRandomCylinderEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius) = 0;
+	virtual void Gazebo2Robocomp_createRandomHumanEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation) = 0;
+	virtual void Gazebo2Robocomp_createRandomSphereEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius) = 0;
 	virtual void Gazebo2Robocomp_createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius) = 0;
 	virtual RoboCompGazebo2Robocomp::Vector3 Gazebo2Robocomp_getWorldPosition(std::string name) = 0;
 	virtual void Gazebo2Robocomp_removeEntity(std::string name) = 0;

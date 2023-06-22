@@ -34,6 +34,7 @@
 #include <string>
 #include <cmath>
 #include "topics.h"
+#include <random>
 
 // Gazebo
 #include <gz/msgs.hh>
@@ -71,15 +72,15 @@ class SpecificWorker : public GenericWorker
         void OmniRobot_setSpeedBase(float advx, float advz, float rot);
         void OmniRobot_stopBase();
 
-	    // DIFFERENTIALROBOT
-	    void DifferentialRobot_correctOdometer(int x, int z, float alpha);
-    	void DifferentialRobot_getBasePose(int &x, int &z, float &alpha);
-	    void DifferentialRobot_getBaseState(RoboCompGenericBase::TBaseState &state);
-	    void DifferentialRobot_resetOdometer();
-	    void DifferentialRobot_setOdometer(RoboCompGenericBase::TBaseState state);
-	    void DifferentialRobot_setOdometerPose(int x, int z, float alpha);
-	    void DifferentialRobot_setSpeedBase(float adv, float rot);
-	    void DifferentialRobot_stopBase();
+        // DIFFERENTIALROBOT
+        void DifferentialRobot_correctOdometer(int x, int z, float alpha);
+        void DifferentialRobot_getBasePose(int &x, int &z, float &alpha);
+        void DifferentialRobot_getBaseState(RoboCompGenericBase::TBaseState &state);
+        void DifferentialRobot_resetOdometer();
+        void DifferentialRobot_setOdometer(RoboCompGenericBase::TBaseState state);
+        void DifferentialRobot_setOdometerPose(int x, int z, float alpha);
+        void DifferentialRobot_setSpeedBase(float adv, float rot);
+        void DifferentialRobot_stopBase();
 
         // IMU
         RoboCompIMU::Acceleration IMU_getAcceleration();
@@ -102,10 +103,16 @@ class SpecificWorker : public GenericWorker
         void Gazebo2Robocomp_createCylinderEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius);
         void Gazebo2Robocomp_createEntity(std::string sdf);
         void Gazebo2Robocomp_createSphereEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius);
+        void Gazebo2Robocomp_createRandomBoxEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float size);
+        void Gazebo2Robocomp_createRandomCapsuleEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius);
+        void Gazebo2Robocomp_createRandomCylinderEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius);
+        void Gazebo2Robocomp_createRandomHumanEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation);
+        void Gazebo2Robocomp_createRandomSphereEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius);
         void Gazebo2Robocomp_removeEntity(std::string name);
         void Gazebo2Robocomp_setEntityPose(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation);
-	    RoboCompGazebo2Robocomp::Vector3 Gazebo2Robocomp_getWorldPosition(std::string name);
-	    void Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity);
+        RoboCompGazebo2Robocomp::Vector3 Gazebo2Robocomp_getWorldPosition(std::string name);
+        void Gazebo2Robocomp_setLinearVelocity(std::string name, RoboCompGazebo2Robocomp::Vector3 velocity);
+        void Gazebo2Robocomp_createHumanEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation);
 
         // LIDAR 3D
         RoboCompLidar3D::TLidarData Lidar3D_getLidarData(std::string name, int start, int len, int decimationfactor);
@@ -127,6 +134,7 @@ class SpecificWorker : public GenericWorker
         void initialize(int period);
 
     private:
+        const int RANDOM_NAME_SIZE = 4;
         bool startup_check_flag;
         FPSCounter fps;
 
@@ -177,6 +185,7 @@ class SpecificWorker : public GenericWorker
         bool isTracking(const std::string& objectName) {
             return objectsData.count(objectName) > 0;
         }
+        std::string generateRandomName(int size);
 };
 
 #endif
