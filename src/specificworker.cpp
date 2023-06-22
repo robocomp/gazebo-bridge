@@ -756,32 +756,32 @@ void SpecificWorker::Gazebo2Robocomp_createHumanEntity(std::string name, RoboCom
 
 void SpecificWorker::Gazebo2Robocomp_createRandomBoxEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float size)
 {
-//implementCODE
-
+    std::string boxName = "box_" + generateRandomName(RANDOM_NAME_SIZE);
+    Gazebo2Robocomp_createBoxEntity(boxName, position, orientation, size);
 }
 
 void SpecificWorker::Gazebo2Robocomp_createRandomCapsuleEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius)
 {
-//implementCODE
-
+    std::string capsuleName = "capsule_" + generateRandomName(RANDOM_NAME_SIZE);
+    Gazebo2Robocomp_createCapsuleEntity(capsuleName, position, orientation, length, radius);
 }
 
 void SpecificWorker::Gazebo2Robocomp_createRandomCylinderEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float length, float radius)
 {
-//implementCODE
-
+    std::string cylinderName = "cylinder_" + generateRandomName(RANDOM_NAME_SIZE);
+    Gazebo2Robocomp_createCylinderEntity(cylinderName, position, orientation, length, radius);
 }
 
 void SpecificWorker::Gazebo2Robocomp_createRandomHumanEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation)
 {
-//implementCODE
-
+    std::string humanName = "human_" + generateRandomName(RANDOM_NAME_SIZE);
+    Gazebo2Robocomp_createHumanEntity(humanName, position, orientation);
 }
 
 void SpecificWorker::Gazebo2Robocomp_createRandomSphereEntity(RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation, float radius)
 {
-//implementCODE
-
+    std::string sphereName = "sphere_" + generateRandomName(RANDOM_NAME_SIZE);
+    Gazebo2Robocomp_createSphereEntity(sphereName, position, orientation, radius);
 }
 
 void SpecificWorker::Gazebo2Robocomp_createEntity(std::string sdf)
@@ -980,6 +980,25 @@ int SpecificWorker::startup_check()
 void SpecificWorker::printNotImplementedWarningMessage(string functionName)
 {
     cout << "Function not implemented used: " << "[" << functionName << "]" << std::endl;
+}
+
+std::string SpecificWorker::generateRandomName(int size) {
+    static const char characters[] =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
+
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::uniform_int_distribution<> distribution(0, sizeof(characters) - 2); // -2 porque queremos excluir el carácter nulo al final de la cadena de caracteres
+
+    std::string randomName;
+
+    for (int i = 0; i < size; ++i) {
+        randomName += characters[distribution(generator)];
+    }
+
+    return randomName;
 }
 
 /**************************************/

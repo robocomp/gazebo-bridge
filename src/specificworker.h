@@ -34,6 +34,7 @@
 #include <string>
 #include <cmath>
 #include "topics.h"
+#include <random>
 
 // Gazebo
 #include <gz/msgs.hh>
@@ -133,6 +134,7 @@ class SpecificWorker : public GenericWorker
         void initialize(int period);
 
     private:
+        const int RANDOM_NAME_SIZE = 4;
         bool startup_check_flag;
         FPSCounter fps;
 
@@ -183,6 +185,7 @@ class SpecificWorker : public GenericWorker
         bool isTracking(const std::string& objectName) {
             return objectsData.count(objectName) > 0;
         }
+        std::string generateRandomName(int size);
 };
 
 #endif

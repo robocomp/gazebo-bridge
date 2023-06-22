@@ -28,7 +28,7 @@ sudo apt-get install libgz-transport12
 sudo apt-get install libgz-transport12-dev
 ```
 
-<p> Lastly, in order to be able to use the bridge resouces like custom meshes in human creation entities you need to create the next enviromental variable in <strong>~/.bashrc</strong>
+<p> Lastly, in order to be able to use the bridge resouces like custom meshes in human creation entities you need to add the next environmental variable in <strong>~/.bashrc</strong>
 </p>
 
 ```bash
