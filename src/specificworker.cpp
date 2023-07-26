@@ -167,7 +167,7 @@ void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
 {
     RoboCompLaser::TLaserData newLaserData;
     RoboCompLaser::LaserConfData newLaserConfData;
-    RoboCompLidar3D::TLidarData newLidar3dData;
+    RoboCompLidar3D::TData newLidar3dData;
 
     // ## DATOS DE CONFIGURACION DE LOS LASERES
     newLaserConfData.maxDegrees = _msg.angle_max();
@@ -201,14 +201,14 @@ void SpecificWorker::lidar_cb(const gz::msgs::LaserScan &_msg)
         data.angle = horizontal_angle;  // Horizontal angle
         data.dist = _msg.ranges(i);
 
-        // Now let's add the 3d lidar data to TLidarData
+        // Now let's add the 3d lidar data to TData
         RoboCompLidar3D::TPoint point;
         point.x = data.dist * cos(horizontal_angle) * cos(vertical_angle);
         point.y = data.dist * sin(horizontal_angle) * cos(vertical_angle);
         point.z = data.dist * sin(vertical_angle);      // z is the vertical component
         point.intensity = _msg.intensities(i);
 
-        newLidar3dData.push_back(point);
+        newLidar3dData.points.push_back(point);
         newLaserData.push_back(data);
 
         // We move to the next horizontal laser.
@@ -459,19 +459,43 @@ RoboCompLaser::TLaserData SpecificWorker::Laser_getLaserData()
     return SpecificWorker::laserData;
 }
 
-RoboCompLidar3D::TLidarData SpecificWorker::Lidar3D_getLidarData(std::string name, int start, int len, int decimationfactor)
+RoboCompLidar3D::TData SpecificWorker::Lidar3D_getLidarData(std::string name, int start, int len, int decimationfactor)
 {
-    RoboCompLidar3D::TLidarData filteredData;
+    RoboCompLidar3D::TData filteredData;
 
     double startRadians = start * M_PI / 180.0; // Convert to radians
     double lenRadians = len * M_PI / 180.0; // Convert to radians
 
-    for (int i = 0; i < lidar3dData.size(); i++)
+    for (int i = 0; i < lidar3dData.points.size(); i++)
     {
-        double angle = atan2(lidar3dData[i].y, lidar3dData[i].x) + M_PI; // Calculate angle in radians
+        double angle = atan2(lidar3dData.points[i].y, lidar3dData.points[i].x) + M_PI; // Calculate angle in radians
         if (angle >= startRadians && angle <= (startRadians + lenRadians))
         {
-            filteredData.push_back(lidar3dData[i]);
+            filteredData.points.push_back(lidar3dData.points[i]);
+        }
+    }
+
+    return filteredData;
+}
+
+RoboCompLidar3D::TData SpecificWorker::Lidar3D_getLidarData(std::string name, int start, int len, int decimationfactor)
+{
+    RoboCompLidar3D::TData filteredData;
+
+    double startRadians = start * M_PI / 180.0; // Convert to radians
+    double lenRadians = len * M_PI / 180.0; // Convert to radians
+    int counter = 0;
+
+    for (int i = 0; i < lidar3dData.points.size(); i++)
+    {
+        double angle = atan2(lidar3dData.points[i].y, lidar3dData.points[i].x) + M_PI; // Calculate angle in radians
+        if (angle >= startRadians && angle <= (startRadians + lenRadians))
+        {
+            if (counter % decimationfactor == 0) // Add decimation factor
+            {
+                filteredData.points.push_back(lidar3dData.points[i]);
+            }
+            counter++;
         }
     }
 

@@ -115,7 +115,7 @@ class SpecificWorker : public GenericWorker
         void Gazebo2Robocomp_createHumanEntity(std::string name, RoboCompGazebo2Robocomp::Vector3 position, RoboCompGazebo2Robocomp::Quaternion orientation);
 
         // LIDAR 3D
-        RoboCompLidar3D::TLidarData Lidar3D_getLidarData(std::string name, int start, int len, int decimationfactor);
+        RoboCompLidar3D::TData Lidar3D_getLidarData(std::string name, int start, int len, int decimationfactor);
 
         // JOYSTICK
         void JoystickAdapter_sendData(RoboCompJoystickAdapter::TData data);
@@ -151,7 +151,7 @@ class SpecificWorker : public GenericWorker
         RoboCompLaser::LaserConfData laserDataConf;
 
         // Lidar3d
-        RoboCompLidar3D::TLidarData lidar3dData;
+        RoboCompLidar3D::TData lidar3dData;
 
         // Odometer
         RoboCompGenericBase::TBaseState odometryTargetState;
